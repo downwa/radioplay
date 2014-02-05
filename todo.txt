@@ -1,0 +1,13 @@
+TODO:
+
+* Avoid playing duplicate AfflBreak (or other program) (as was done below)
+* Avoid playing Network_ID_with_DTMF before the appropriate time.
+* Avoid scheduling e.g. BOTB008-2 (segment 2) at the beginning of an hour without previous segment.
+* Avoid scheduling e.g. WATW016-1 (segment 1) at the beginning of an hour without following segment.
+
+2011-11-09 10:40:21: 2011-11-09 10:40:21 (+10800)::Player5813      : Player::Execute: CATCH UP (remaining=-2439): /tmp/play3abn/download/AfflBreak-20110514_105845.ogg
+2011-11-09 10:48:29: 2011-11-09 10:48:29 (+10800)::Decoder5813     : Bitstream is 1 channel, 16000Hz, 912000 samples (00:00:57.0), seek=0,filename=/tmp/play3abn/tmp/playtmp-2011-11-09 10:58:45 0057 AfflBreak-20110514_105845.ogg
+2011-11-09 10:51:47: 2011-11-09 10:51:47 (+10800)::Decoder5813     : Bitstream is 1 channel, 16000Hz, 912000 samples (00:00:57.0), seek=0,filename=/tmp/play3abn/tmp/playtmp-2011-11-09 10:58:45 0057 AfflBreak-20110514_105845.ogg
+root@warren-OptiPlex:/media/MEDIADEVEL/devel/workspace/warren/3abn/play3abn# tail /tmp/play3abn/play3abn.log | grep Bitstream
+2011-11-09 10:52:44: 2011-11-09 10:52:44 (+10800)::Decoder5813     : Bitstream is 1 channel, 16000Hz, 224000 samples (00:00:14.0), seek=0,filename=/tmp/play3abn/tmp/playtmp-2011-11-09 10:59:45 0015 Network_ID_with_DTMF_#4.ogg
+2011-11-09 10:52:58: 2011-11-09 10:52:58 (+10800)::Decoder5813     : Bitstream is 1 channel, 16000Hz, 1503400 samples (00:01:33.9), seek=0,filename=/tmp/play3abn/tmp/playtmp-2011-11-09 10:52:58 0093 092-JOY UNSPEAKABLE-Ralph Carmichael.ogg

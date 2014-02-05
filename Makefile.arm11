@@ -1,0 +1,109 @@
+Z=libs/ezfb
+export PATH=bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games
+EZFB=$(Z)/ezfb_bmp.o $(Z)/ezfb_colors.o $(Z)/ezfb_device.o $(Z)/ezfb_fonts.o $(Z)/ezfb_pixels.o $(Z)/ezfb_tty.o
+CX=../../dev-arm/gcc/usr/local/arm/4.3.2/bin/arm-none-linux-gnueabi-$(CXX) -mcpu=arm11 -DARM -O -fno-inline -g -Wall -Werror \
+	-L./libs/lib/ -L./libs/libogg/lib/ -L./libs/libvorbis/lib -L./libs/tremor/.libs/ -L./libs/libssl/lib -L./libs/curl/lib \
+	-L./libs/libncurses/lib -L./libs/libts/lib \
+	-I./libs/libogg/include/ -I./libs/curl/include -I./libs/libssl/include -I./libs/libncurses/include -L./libs/libts/include \
+	-I./libs/ezfb \
+                
+STRIP=../../dev-arm/gcc/usr/local/arm/4.3.2/bin/arm-none-linux-gnueabi-strip
+
+all: links play3abn mplay src-3abn mdown mscreen getarc
+
+links:
+	@ln -sf ../*.cc ../*.hh ../stacktrace.h ../logerr.h ../FillerPlaylist.txt ../vars .
+	@ln -sf ../../libs/arm libs
+
+mscreen: out.o outscreen.o outscreen_input.o outscreen_saver.o thread.o mscreen.cc $(EZFB)
+	$(CX) -o mscreen out.o outscreen.o outscreen_input.o outscreen_saver.o thread.o $(EZFB) -L. -lts -lradioutil -lncurses -lpthread mscreen.cc
+	$(STRIP) mscreen
+
+outscreen.o: outscreen.cc outscreen.hh
+	$(CX) -c outscreen.cc
+
+out.o: out.cc out.hh util.hh
+	$(CX) -c out.cc
+
+outscreen_input.o: outscreen_input.cc outscreen_input.hh
+	$(CX) -c outscreen_input.cc
+
+outscreen_saver.o: outscreen_saver.cc outscreen_saver.hh
+	$(CX) -c outscreen_saver.cc
+
+play3abn: play3abn.cc play3abn.hh libradioutil.so thread.o
+	$(CX) -o play3abn thread.o -L. -lradioutil -lpthread play3abn.cc
+	$(STRIP) play3abn
+
+src-3abn: src-3abn.cc src-3abn.hh libradioutil.so libdecoder.so thread.o
+	$(CX) -o src-3abn thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread src-3abn.cc
+	$(STRIP) src-3abn
+
+lrucache: lrucache.cc lrucache.hh libradioutil.so libdecoder.so thread.o lrucache.o
+	$(CX) -o lrucache thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread lrucache.cc
+	$(STRIP) lrucache
+
+src-cnn.o: src-cnn.cc src-cnn.hh util.hh
+	$(CX) -c src-cnn.cc
+
+src-fill.o: src-fill.cc src-fill.hh
+	$(CX) -c src-fill.cc
+
+libradioutil.so: util.cc util.hh stacktrace.h thread.hh mutex.hh
+	$(CX) -fPIC -shared -Wl,-soname,libradioutil.so -o libradioutil.so util.cc
+	$(STRIP) libradioutil.so
+
+#	g++ -DTESTHARNESS -o util -lpthread util.cc
+
+thread.o: thread.cc thread.hh
+	$(CX) -c thread.cc
+
+dec-ogg.o: dec-ogg.cc dec-ogg.hh
+	$(CX) -c dec-ogg.cc
+
+dec-mp3.o: dec-mp3.cc dec-mp3.hh
+	$(CX) -c dec-mp3.cc
+
+dec-wav.o: dec-wav.cc dec-wav.hh
+	$(CX) -c dec-wav.cc
+
+wavereader.o: wavereader.cc wavereader.hh wave.hh
+	$(CX) -c wavereader.cc
+
+wavewriter.o: wavewriter.cc wavewriter.hh wave.hh
+	$(CX) -c wavewriter.cc
+
+DECOBJS=dec-mp3.o dec-ogg.o dec-wav.o wavereader.o wavewriter.o taudioq.o 
+libdecoder.so: maindec.cc maindec.hh $(DECOBJS)
+	$(CX) -fPIC -shared -Wl,-soname,libdecoder.so -o libdecoder.so $(DECOBJS) maindec.cc
+	$(STRIP) libdecoder.so
+
+mplay.o: mplay.cc mplay.hh util.hh maindec.hh taudioq.hh tqnode.hh
+	$(CX) -c mplay.cc
+
+taudioq.o: taudioq.cc taudioq.hh tqnode.hh
+	$(CX) -c taudioq.cc
+
+MPLAYOBJS=mplay.o src-fill.o thread.o
+mplay: $(MPLAYOBJS) libradioutil.so libdecoder.so /usr/bin/madplay
+	$(CX) -o mplay $(MPLAYOBJS) -L. -ldecoder -lradioutil -lvorbisidec -lpthread
+	$(STRIP) mplay
+
+mdown: mdown.cc mdown.hh libradioutil.so thread.o src-cnn.o
+	$(CX) -o mdown src-cnn.o thread.o -L. -lradioutil -lpthread -lcurl mdown.cc
+	$(STRIP) mdown
+
+getarc: getarc.cc getarc.hh
+	$(CX) -o getarc getarc.cc -lcurl
+	$(STRIP) getarc
+
+run2: mdown
+	sudo LD_LIBRARY_PATH=. ./mdown
+
+run: play3abn
+	#sudo rm -fr /tmp/play3abn/
+	sudo LD_LIBRARY_PATH=. aoss ./play3abn
+
+clean:
+	rm -f out.wav *.o *~ *.so *.cc *.hh *.h libs mdown mplay src-3abn play3abn mscreen
+	make links
