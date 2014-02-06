@@ -21,7 +21,7 @@ MARK
 MARK
 	decoder=new Decoder(audioq);
 MARK
-	schedRpy=NULL;
+	initScheduled();
 MARK
 }
 
@@ -73,7 +73,7 @@ int Player::incVol(int inc) {
 	return vol;
 }
 /*******************************************************************/
-void Scheduled::initScheduled() {
+void Player::initScheduled() {
 	syslog(LOG_INFO,"Scheduled::initScheduled");
 	if(schedRpy) { fclose(fillsRpy); }
 	schedRpy=popen("./getsched","r");

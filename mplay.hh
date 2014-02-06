@@ -24,6 +24,7 @@
 #include "thread.hh"
 #include "util.hh"
 #include "maindec.hh"
+//#include "getsched.hh"
 
 class Player: Thread {
 	FILE *schedRpy;
@@ -64,6 +65,7 @@ public:
 	string latestNews(bool& refresh);
 */
 	strings getScheduled();
+	void initScheduled();
 	void write_sinewave(int sample_rate, int fileindex);
 	int open_audio_device_ex(const char *name, int mode, int channels, int sample_rate);
 	int open_audio_device(const char *name, int mode);

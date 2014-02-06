@@ -1,3 +1,6 @@
+#ifndef SRCFILL
+#define SRCFILL
+
 #include "maindec.hh"
 
 #include "thread.hh"
@@ -18,3 +21,5 @@ protected:
 public:
 	SrcFill(Util* util, Decoder* decoder);
 };
+
+#endif
