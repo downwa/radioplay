@@ -75,7 +75,7 @@ int Player::incVol(int inc) {
 /*******************************************************************/
 void Player::initScheduled() {
 	syslog(LOG_INFO,"Scheduled::initScheduled");
-	if(schedRpy) { fclose(fillsRpy); }
+	if(schedRpy) { fclose(schedRpy); }
 	schedRpy=popen("./getsched","r");
 	if(!schedRpy) { syslog(LOG_ERR,"./getsched failed: %s",strerror(errno)); exit(1); }
 }
@@ -107,7 +107,7 @@ strings Player::getScheduled() {
   // NOTE:    infs.one=2014-01-22 19:00:00 -1
   // NOTE:    infs.two=BIBLESTORIES 1377 /tmp/play3abn/cache/Radio/Bible stories/Vol 01/V1-06a  The Disappearing Idols.ogg
   strings ent(Util::fmtTime(0)+" -1 "+string(dispname),"FIXMECAT "+string(secLen)+" "+string(path)); // Unscheduled, age one year, include length and
-  fillname=dispname;
+  //fillname=dispname;
   return ent;
 }
 
@@ -132,24 +132,26 @@ MARK
 		time_t playAt=0;
 		int seclen=0;
 		string dispname="";
-		int scheduleAgeDays=0;
-		if(!util->parseInfo(ent, playAt, scheduleAgeDays, seclen, dispname)) {
-			syslog(LOG_ERR,"Player::Execute: Invalid format1: %s",ent.one.c_str());
-			//remove((pqdirs+"/"+ent.one).c_str());
-			continue;
+		int flag=0;
+		string catcode="",url="";
+		int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, url);
+		string playlink=string(playqdir)+"/"+ent.one;
+		const char *playlinkS=playlink.c_str();
+		if(result<0) {
+			syslog(LOG_ERR,"Player::Execute: Invalid format1 (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
+			remove(playlinkS); continue;
 		}
-		char playlink[1024]={0};
-		elapsed=(now-playAt);
-		pname=ent.one.c_str();
-		ppath=ent.two.c_str();
+		time_t now=time(NULL);
+		int elapsed=(now-playAt);
+		const char *pname=ent.one.c_str();
+		const char *ppath=url.c_str();
 		syslog(LOG_ERR,"1seclen=%d,one=%s,two=%s",seclen,pname,ppath);		
-		snprintf(playlink,sizeof(playlink),"%s/%s",playqdir,pname); 
 /** PLAY IT only if found **/
 		struct stat statbuf;
 		if(stat(ppath, &statbuf)==-1) {
 MARK
 			syslog(LOG_ERR,"Player::Execute: Missing: %s.",ppath);
-			if(playlink[0]) { remove(playlink); }
+			if(playlink.length()>0) { remove(playlinkS); }
 			continue;
 		} // Non-existent
 		
@@ -157,13 +159,15 @@ MARK
 
 		/** Copy to temp dir so filesystem can be unmounted while playing (for switching program sources) **/
 		char playtemp[1024];
-		strings ent=util->itemEncode(playAt, flag, expectSecs, catcode, url);
-		snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%s %s",	Util::TEMPPATH,ent.one.c_str(),ent.two.c_str());
+		strings ent2=util->itemEncode(playAt, flag, seclen, catcode, url);
+		snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%s %s",	Util::TEMPPATH,ent2.one.c_str(),ent2.two.c_str());
 MARK
 		util->copyFile(ppath,playtemp);
-		strncpy(prevfile,ppath,sizeof(prevfile));
-		setIT("isfilling",isFilling);
-		setIT("scheduleagedays",scheduleAgeDays);
+// FIXME BELOW LINES ARE THEY NEEDED?
+//		strncpy(prevfile,ppath,sizeof(prevfile));
+		bool isFilling=false; // FIXME
+//		setIT("isfilling",isFilling);
+		setIT("flag",flag);
 MARK
 /** FIXME Crashed in decode.  Why? **/
 		int seekSecs=elapsed<30?0:elapsed;
@@ -176,7 +180,7 @@ MARK
 MARK
 		utime(ppath,NULL); // Mark file as recently played
 		
-		if(scheduleAgeDays==366) { // Flag this as coming from schedfixed:: need to save current item
+		if(flag==366) { // Flag this as coming from schedfixed:: need to save current item
 			char catcode[32];
 			snprintf(catcode,sizeof(catcode)-1,"%s",dispname.c_str());
 			char *pp=strchr(catcode,' ');
@@ -196,11 +200,11 @@ MARK
 		remove(playtemp);
 MARK
 		// Remove link to the file (unless -Filler.ogg)
-		if(!isFilling && playlink[0] /*&& strstr(playlink,"-Filler.ogg")==NULL*/) {
-			syslog(LOG_INFO,"REMOVING playlink=%s",playlink);
-			remove(playlink);
+		if(!isFilling && playlink.length()>0) {
+			syslog(LOG_INFO,"REMOVING playlink=%s",playlinkS);
+			remove(playlinkS);
 		}
-		else { syslog(LOG_INFO,"NOT removing playlink=%s (isFilling=%d)",playlink,isFilling); }
+		else { syslog(LOG_INFO,"NOT removing playlink=%s (isFilling=%d)",playlinkS,isFilling); }
 MARK
 	}
 MARK
