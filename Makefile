@@ -12,11 +12,11 @@ checkout:
 	git pull
 
 checkin: # e.g. downwa
+	#git push -v origin master
+	#git push -v https://downwa@github.com/downwa/radioplay master
 	git add -v *.c *.cc *.h *.hh *.sh *.txt LICENSE README.md Makefile*
 	git commit -v
 	git push
-	#git push -v origin master
-	#git push -v https://downwa@github.com/downwa/radioplay master
 
 bin:
 	mkdir -p $(ARCH)
