@@ -115,10 +115,12 @@ MARK
 			int flag=0;
 			int seclen=0;
 			string dispname="";
-			if(!util->parseInfo(ent, playAt, flag, seclen, dispname, true)) {
-				syslog(LOG_ERR,"Downloader::DownloadLoop: Invalid format1: %s",ent.one.c_str());
-				if(downlink[0]) { remove(downlink); }
-				continue;
+			string catcode="";
+			string decodedUrl="";
+			int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, decodedUrl);
+			if(result<0) {
+			  syslog(LOG_ERR,"Downloader::DownloadLoop: Invalid format1 (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
+			  if(downlink[0]) { remove(downlink); }
 			}
 			if(ent.two.substr(0,7)!="http://" && ent.two.substr(0,6)!="ftp://") { continue; } // Skip all non-url links
 

@@ -389,7 +389,7 @@ strings Util::itemEncode(time_t playAt, int flag, int expectSecs, string catcode
 	snprintf(surl,sizeof(surl),"catcode=%s;expectSecs=%04d;flag=%d;url=%s",catcode.c_str(),expectSecs,flag,urlEncode(url).c_str());
 	return strings(centry,surl);
 }
-/** Replaces parseInfo
+/** itemDecode replaces parseInfo
  *  INPUT: infs => a pair of strings
  * OUTPUT: scheduled time, flag, playback seconds, category code, decoded URL or local file path **/
 int Util::itemDecode(strings infs, time_t& otime, int& flag, int& expectSecs, string& catcode, string& dispname, string& decodedUrl) {

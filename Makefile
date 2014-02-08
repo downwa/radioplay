@@ -20,4 +20,4 @@ checkin: # e.g. downwa
 
 bin:
 	mkdir -p $(ARCH)
-	make -f ../Makefile.$(ARCH) -C $(ARCH)/ 2>&1 | more
+	make -f ../Makefile.$(ARCH) -C $(ARCH)/ #2>&1 | more

@@ -262,12 +262,13 @@ MARK
                 /** Parse info string **/
                 time_t playAt=0;
                 int seclen=0;
-		int scheduleAgeDays=0;
                 string dispname="";
-		if(!util->parseInfo(ent, playAt, scheduleAgeDays, seclen, dispname)) {
-			fprintf(stderr,"        line=%d Player::Execute: Invalid format1: %s\n",__LINE__,ent.one.c_str());
-			//remove((pqdirs+"/"+ent.one).c_str());
-			continue;
+		int flag=0;
+		string catcode="",url="";
+		int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, url);
+		if(result<0) {
+		  fprintf(stderr,"        line=%d Player::Execute: Invalid format1 (result=%d): %s => %s",__LINE__,result,ent.one.c_str(),ent.two.c_str());
+		  continue;
 		}
 		printf("%04d|%s|%s\n",seclen,("FILLER-"+dispname).c_str(),ent.two.c_str());
 		fflush(stdout);

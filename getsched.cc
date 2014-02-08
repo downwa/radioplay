@@ -78,16 +78,18 @@ MARK
 	/** IS this EARLY or LATE? **/
 	time_t playAt=0;
 	int seclen=0;
-	int scheduleAgeDays=0;
 	string dispname="";
 	/** Parse info string **/
 	strings saveEnt=ent;
 	saveEnt.two=string(saveEnt.two.c_str());
 //syslog(LOG_INFO,"FIRST one=%s,two=%s",ent.one.c_str(),ent.two.c_str());
-	if(!util->parseInfo(ent, playAt, scheduleAgeDays, seclen, dispname)) {
-		syslog(LOG_ERR,"        line=%d Player::Execute: Invalid format1: %s",__LINE__,ent.one.c_str());
-		//remove((pqdirs+"/"+ent.one).c_str());
-		return ent;
+	string catcode="";
+	string decodedUrl="";
+	int flag;
+	int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, decodedUrl);
+	if(result<0) {
+	  syslog(LOG_ERR,"        line=%d Player::Execute: Invalid format (result=%d): %s => %s",__LINE__,result,ent.one.c_str(),ent.two.c_str());
+	  return ent;
 	}
 //syslog(LOG_INFO,"SECND one=%s,two=%s,scheduleAgeDays=%d,seclen=%d",saveEnt.one.c_str(),saveEnt.two.c_str(), scheduleAgeDays, seclen);
 	bool tooLate=(now > playAt+seclen);
@@ -143,18 +145,20 @@ MARK
 		bool isFiller=false;
 		time_t playAt=0;
 		int seclen=0;
-		int scheduleAgeDays=0;
 		string dispname="";
 		int elapsed=0;
 		int remaining=0;
+		string catcode="";
+		string decodedUrl="";
+		int flag;
 		bool tooLate=false;
 		do {
 			ent=getScheduled(isFiller,now);
 			/** Parse info string **/
-			if(!util->parseInfo(ent, playAt, scheduleAgeDays, seclen, dispname)) {
-				fprintf(stderr,"        line=%d Player::Execute: Invalid format1: %s\n",__LINE__,ent.one.c_str());
-				//remove((pqdirs+"/"+ent.one).c_str());
-				continue;
+			int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, decodedUrl);
+			if(result<0) {
+			  fprintf(stderr,"        line=%d Player::Execute: Invalid format1 (result=%d): %s => %s\n",__LINE__,result,ent.one.c_str(),ent.two.c_str());
+			  continue;
 			}
 			//const char *pname=dispname.c_str();
 			if(!isFiller) { snprintf(playlink,sizeof(playlink),"%s/%s",playqdir,ent.one.c_str()); }

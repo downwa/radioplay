@@ -1,7 +1,7 @@
 CX=$(CXX) -O -fno-inline -g -Wall -Werror -m32 -L./libs/ -L./libs/32 -L./libs/64 -I./libs -I./include #-L/usr/lib/i386-linux-gnu/
 #CX=$(CXX) -O -fno-inline -g -Wall -Werror -L./libs/ -L./libs/32 -L./libs/64 -I./libs #-L/usr/lib/i386-linux-gnu/
 
-all: links play3abn mplay mplay.bin src-3abn lrucache mdown mscreen getarc schedfixed ogglen getfill getsched
+all: links play3abn mplay mplay.bin src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched # lrucache
 	@#sudo chown root.root play3abn src-3abn mdown mscreen getarc
 	@#sudo chmod +s play3abn src-3abn mdown mscreen getarc
 
@@ -29,20 +29,20 @@ play3abn: play3abn.cc play3abn.hh libradioutil.so thread.o out.o outscreen.o out
 	@#sudo chmod +s play3abn
 
 src-3abn: src-3abn.cc src-3abn.hh libradioutil.so libdecoder.so thread.o src-3abn.o
-	$(CX) -o src-3abn src-3abn.o thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread
+	$(CX) -o src-3abn src-3abn.o thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lvorbisfile
 
 schedfixed: schedfixed.cc schedfixed.hh libradioutil.so libdecoder.so thread.o schedfixed.o
 	$(CX) -o schedfixed schedfixed.o thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lpcre
 
 ogglen: ogglen.cc maindec.hh util.hh libradioutil.so libdecoder.so thread.o
-	$(CX) -o ogglen ogglen.cc thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread
+	$(CX) -o ogglen ogglen.cc thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lvorbisfile
 
-lrucache: lrucache.cc lrucache.hh libradioutil.so libdecoder.so thread.o lrucache.o
-	$(CX) -o lrucache lrucache.o thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread
+#lrucache: lrucache.cc lrucache.hh libradioutil.so libdecoder.so thread.o lrucache.o
+#	$(CX) -o lrucache lrucache.o thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread
 
 MPLAYOBJS=mplay.o src-fill.o thread.o
 mplay.bin: $(MPLAYOBJS) libradioutil.so libdecoder.so /usr/bin/madplay
-	$(CX) -o mplay.bin $(MPLAYOBJS) -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lpulse -lpulse-simple -lasound
+	$(CX) -o mplay.bin $(MPLAYOBJS) -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lpulse -lpulse-simple -lasound -lvorbisfile
 	sudo chmod +s mplay.bin
 
 getfill: getfill.o thread.o
@@ -57,7 +57,7 @@ getsched: getsched.o thread.o
 mplay: runplay.cc
 	$(CX) -o mplay runplay.cc
 	@#sudo chown root.root mplay
-	@#sudo chmod +x mplay
+	#sudo chmod +x mplay
 
 src-cnn.o: src-cnn.cc src-cnn.hh util.hh
 	$(CX) -c src-cnn.cc

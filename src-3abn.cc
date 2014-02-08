@@ -701,12 +701,16 @@ MARK
 			int flag=0;
 			int seclen=0;
 			string name="";
-			if(!util->parseInfo(ent, dt, flag, seclen, name)) {
-				string playlink=ent.two;
-				syslog(LOG_ERR,"Src3ABN::getLeastRecentlyPlayedFile: Invalid format: %s",ent.one.c_str());
-				syslog(LOG_ERR,"remove2(%s)",playlink.c_str());
-				remove(playlink.c_str()); continue;
+			string catcode="";
+			string dispname="";
+			string decodedUrl="";
+			int result=util->itemDecode(ent, dt, flag, seclen, catcode, name, decodedUrl);
+			if(result<0) {
+			  syslog(LOG_ERR,"Src3ABN::getLeastRecentlyPlayedFile: Invalid format (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
+			  syslog(LOG_ERR,"remove2(%s)",decodedUrl.c_str());
+			  remove(decodedUrl.c_str()); continue;
 			}
+			
 			//syslog(LOG_INFO,"Src3ABN::getLeastRecentlyPlayedFile: name=%s",name.c_str());
 MARK
 			if(!dontmatch.empty()) { // Ignore files starting with dontmatch
@@ -733,7 +737,7 @@ MARK
 				syslog(LOG_INFO,"Src3ABN::getLeastRecentlyPlayedFile:   seclen(%4d)<minLen(%4d) or 0,name=%s",seclen,minLen,name.c_str());
 				continue; } // File is shorter than we can use: skip it!
 			retlen=seclen; // Output actual length of selected media file (in seconds)
-			lrpFilename=ent.two;
+			lrpFilename=decodedUrl;
 			string linkpath=lruq+"/"+ent.one;
 			// Remove link to avoid using this file in the near future (unless Network_ID)
 			if(name.find("Network_ID_with_DTMF",0) == string::npos) { 
