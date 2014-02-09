@@ -244,19 +244,7 @@ int Player::open_audio_device_ex(const char *name, int mode, int channels, int s
 	int fd=-2;
 #ifndef ARM
 
-	//openALSA(channels,sample_rate);
-        int err;
-        //snd_pcm_t *handle;
-        if ((err = snd_pcm_open(&handle, "default"/*device*/, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
-                syslog(LOG_ERR,"Playback open error#1: %s", snd_strerror(err));
-                abort();
-        }
-        if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, channels, sample_rate, 1/*allow resampling*/, 500000 /* 0.5sec latency */)) < 0) {
-                syslog(LOG_ERR,"Playback open error#2: %s", snd_strerror(err));
-                abort();
-        }
-        curChannels=channels; curHz=sample_rate;
-	//return handle;
+	openALSA(channels,sample_rate);
 
 	goto success;
 #else
