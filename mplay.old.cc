@@ -1,5 +1,6 @@
-#include "mplay.hh"
+//#FIXME crash at "397" see crash.txt but it doesn't show the Decode msg just before crash
 
+#include "mplay.hh"
 #define EXECDELAY 100000 /* 0.1 seconds */
 
 Player::Player() {
@@ -243,26 +244,26 @@ int Player::open_audio_device_ex(const char *name, int mode, int channels, int s
 #endif
 	int fd=-2;
 #ifndef ARM
-
-	//openALSA(channels,sample_rate);
         int err;
-        //snd_pcm_t *handle;
-        if ((err = snd_pcm_open(&handle, "default"/*device*/, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+        if ((err = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
                 syslog(LOG_ERR,"Playback open error#1: %s", snd_strerror(err));
                 abort();
         }
-        if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, channels, sample_rate, 1/*allow resampling*/, 500000 /* 0.5sec latency */)) < 0) {
+        if ((err = snd_pcm_set_params(handle, // TRY ALSA
+                                      SND_PCM_FORMAT_S16_LE,
+                                      SND_PCM_ACCESS_RW_INTERLEAVED,
+                                      channels, // channels
+                                      sample_rate, // rate
+                                      1, // allow resampling
+                                      5000000)) < 0) {   /* 0.5sec latency */
                 syslog(LOG_ERR,"Playback open error#2: %s", snd_strerror(err));
                 abort();
         }
-        curChannels=channels; curHz=sample_rate;
-	//return handle;
-
+	curChannels=channels; curHz=sample_rate;
 	goto success;
 #else
 	bool firstTry=true;
 	int tries=0;
-// FIXME: Add fallback to OSS instead of failure
 retry:
 	if(firstTry) {
 		firstTry=false;
@@ -314,6 +315,7 @@ syslog(LOG_ERR,"Calling open_audio_device from openTestAudio");
 	setST("playfile","");
 	setIT("playsec",0);
 	setIT("curplaylen",0);
+	
 	for(int xa=0; xa<2; xa++) { write_sinewave(SAMPLE_RATE,fileindex); }
 	testVol=0;
 	for(int xa=0; xa<6; xa++) { write_sinewave(SAMPLE_RATE,fileindex); }
@@ -368,8 +370,7 @@ MARK
         			frames = snd_pcm_writei(handle, &curaudio[xa], len/2);
                 		if (frames < 0) frames = snd_pcm_recover(handle, frames, 0);
                 		if (frames < 0) {
-                        		fprintf(stderr,"WriteAudio: snd_pcm_writei failed: %s\n", snd_strerror(frames));
-                        		syslog(LOG_ERR,"WriteAudio: snd_pcm_writei failed: %s", snd_strerror(frames));
+                        		syslog(LOG_ERR,"WriteAudio: snd_pcm_writei failed: %s", snd_strerror(errno));
 					//snd_pcm_close(handle);
 					//fd_out=open_audio_device_ex("/dev/dsp", O_WRONLY, 1, curHz);
 					//if(fd_out==-1) { exit(1); }
@@ -476,20 +477,6 @@ MARK
 //  }
 //  if (sa) { pa_simple_free(sa); }
 #endif
-}
-snd_pcm_t *Player::openALSA(int channels, int sample_rate) {
-        int err;
-        //snd_pcm_t *handle;
-        if ((err = snd_pcm_open(&handle, "default"/*device*/, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
-                syslog(LOG_ERR,"Playback open error#1: %s", snd_strerror(err));
-                abort();
-        }
-        if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, channels, sample_rate, 1/*allow resampling*/, 500000 /* 0.5sec latency */)) < 0) {
-                syslog(LOG_ERR,"Playback open error#2: %s", snd_strerror(err));
-                abort();
-        }
-        curChannels=channels; curHz=sample_rate;
-	return handle;
 }
 
 int main(int argc, char **argv) {
