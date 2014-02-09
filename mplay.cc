@@ -324,7 +324,9 @@ syslog(LOG_ERR,"Calling open_audio_device from openTestAudio");
 	if(enqbuf) { // Fill buffer with enough silence to trigger playback readiness
 		memset(enqbuf,0,sizeof(buf));
 		audioq->enq(enqbuf,sizeof(buf),fileindex++,decoder->blockindex++);
+#ifndef RPI
 		if(system("ls -ld /proc/$(pidof mplay.bin)/fd/* >/tmp/mplay.err")<0) { syslog(LOG_ERR,"ls(pid)#1: %s",strerror(errno)); }
+#endif
 		util->setInt("fileindex",fileindex);
 	}
 	else { syslog(LOG_ERR,"test audio2:malloc error: %s",strerror(errno)); }

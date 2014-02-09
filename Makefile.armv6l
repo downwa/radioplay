@@ -1,7 +1,7 @@
 CX=$(CXX) -O -fno-inline -g -Wall -Werror -DRPI 
 #CX=$(CXX) -O -fno-inline -g -Wall -Werror -L./libs/ -L./libs/32 -L./libs/64 -I./libs #-L/usr/lib/i386-linux-gnu/
 
-all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen
+all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched #lrucache
 	@#sudo chown root.root play3abn src-3abn mdown mscreen getarc
 	@#sudo chmod +s play3abn src-3abn mdown mscreen getarc
 
@@ -45,6 +45,14 @@ MPLAYOBJS=mplay.o src-fill.o thread.o
 mplay: $(MPLAYOBJS) libradioutil.so libdecoder.so /usr/bin/madplay
 	$(CX) -o mplay $(MPLAYOBJS) -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lasound # -lpulse -lpulse-simple -lasound
 #	sudo chmod +s mplay.bin
+
+getfill: getfill.o thread.o
+	$(CX) -o getfill getfill.o thread.o -L. -lradioutil -lpthread
+	sudo chmod +x getfill
+
+getsched: getsched.o thread.o
+	$(CX) -o getsched getsched.o thread.o -L. -lradioutil -lpthread
+	sudo chmod +x getsched
 
 runplay: runplay.cc
 	$(CX) -o runplay runplay.cc
