@@ -1,4 +1,4 @@
-ARCH = $(shell uname -i)
+ARCH = $(shell uname -m)
 
 default: bin
 
