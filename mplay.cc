@@ -1,5 +1,3 @@
-//#FIXME crash at "397" see crash.txt but it doesn't show the Decode msg just before crash
-
 #include "mplay.hh"
 
 #define EXECDELAY 100000 /* 0.1 seconds */
