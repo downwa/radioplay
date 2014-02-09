@@ -69,6 +69,7 @@ public:
 	void write_sinewave(int sample_rate, int fileindex);
 	int open_audio_device_ex(const char *name, int mode, int channels, int sample_rate);
 	int open_audio_device(const char *name, int mode);
+	snd_pcm_t *openALSA(int channels, int sample_rate);
 	int openTestAudio(const char *name_out);
 	void WriteAudio(char *curaudio, int len);
 	void Playback();
