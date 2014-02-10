@@ -3,7 +3,8 @@
 sudo mkdir -p /media/RadioSD
 mcount=$(mount | grep /RadioSD | wc -l)
 [ "$mcount" -lt 1 ] && sudo mount --bind /RadioSD /media/RadioSD
-sbin="$HOME/dev/3abn/play3abn/i386"
+#sbin="$HOME/dev/3abn/play3abn/i386"
+sbin="$HOME/radioplay/x86_64"
 
 perms() {
 	while [ true ]; do
@@ -23,7 +24,8 @@ control_c() {
 
 sudo rm -f /tmp/play3abn/play3abn.log
 cd "$sbin"
-for file in lib*.so libs/lib*.so*; do
+#for file in lib*.so libs/lib*.so*; do
+for file in lib*.so; do
 	base=$(basename "$file")
 	[ "$file" -nt /lib/i386-linux-gnu/$base ] && sudo cp -av "$file" /lib/i386-linux-gnu/
 	[ -d /lib/tls/i686/cmov/ -a "$file" -nt /lib/tls/i686/cmov/$base ] && sudo cp -av "$file" /lib/tls/i686/cmov/

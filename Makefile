@@ -14,7 +14,7 @@ checkout:
 checkin: # e.g. downwa
 	#git push -v origin master
 	#git push -v https://downwa@github.com/downwa/radioplay master
-	git add -v *.c *.cc *.h *.hh *.sh *.txt LICENSE README.md Makefile*
+	git add -v *.c *.cc *.h *.hh *.sh *.txt LICENSE README.md Makefile* vars
 	git commit -v
 	git push
 

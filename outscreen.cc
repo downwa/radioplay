@@ -69,12 +69,17 @@ void OutScreen::Execute(void* arg) {
 MARK
 		int saving=getIT("saving");
 		int doLogStderr=getIT("doLogStderr");
+fprintf(stderr,"saving=%d,doLogStderr=%d\n",saving,doLogStderr);
 		if(!saving && !doLogStderr) {
+MARK
+screenWrite(1,1,"   TEST    "); sleep(9);
+MARK
 MARK
 			unsigned int oldx=maxx,oldy=maxy;
 			getmaxyx(stdscr,maxy,maxx);
 			if(oldx!=maxx || oldy!=maxy) { syslog(LOG_ERR,"maxx=%d,maxy=%d",maxx,maxy); }
-			if(DoCalibrate()) { Output(); }
+			//if(DoCalibrate()) { Output(); }
+			Output();
 			//mvwprintw(stdscr,1,1,"@"); sleep(1);
 			isWide=maxx>=80;
  			if(!clickShown) {
@@ -138,7 +143,6 @@ OutScreen::OutScreen(const char* ttypath, Util* util): Out(util) {
 	
 	saver=new OutScreenSaver(new Util("saver"), this);
 	Activate();
-	
 /** VmSize=20472 **/	
 	Execute(NULL);
 	//Start();
