@@ -69,11 +69,7 @@ void OutScreen::Execute(void* arg) {
 MARK
 		int saving=getIT("saving");
 		int doLogStderr=getIT("doLogStderr");
-fprintf(stderr,"saving=%d,doLogStderr=%d\n",saving,doLogStderr);
 		if(!saving && !doLogStderr) {
-MARK
-screenWrite(1,1,"   TEST    "); sleep(9);
-MARK
 MARK
 			unsigned int oldx=maxx,oldy=maxy;
 			getmaxyx(stdscr,maxy,maxx);

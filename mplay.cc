@@ -105,8 +105,11 @@ strings Player::getScheduled() {
     //printf("secLen=%d,dispname=%s,path=%s\n",secLen,dispname,path);
   // NOTE:    infs.one=2014-01-22 19:00:00 -1
   // NOTE:    infs.two=BIBLESTORIES 1377 /tmp/play3abn/cache/Radio/Bible stories/Vol 01/V1-06a  The Disappearing Idols.ogg
-  strings ent(Util::fmtTime(0)+" -1 "+string(dispname),"FIXMECAT "+string(secLen)+" "+string(path)); // Unscheduled, age one year, include length and
-  //fillname=dispname;
+  // NOTE: SHOULD BE:
+  // NOTE:    infs.one=2014-02-10 14:00:00
+  // NOTE:    infs.two=catcode=BIBLEANSWERS;expectSecs=3601;flag=366;url=/tmp/play3abn/cache/Radio/Amazing%20facts/ba20070715.ogg
+  // strings ent(Util::fmtTime(0)+" -1 "+string(dispname),"FIXMECAT "+string(secLen)+" "+string(path)); // Unscheduled, age one year, include length and fillname=dispname;
+  strings ent(Util::fmtTime(0),"catcode=FIXME;expectSecs="+string(secLen)+";flag=366;url= "+string(path));
   return ent;
 }
 

@@ -1,3 +1,4 @@
 #!/bin/sh
 
-nice -n -19 aoss ./mplay.bin
+#nice -n -19 aoss 
+./mplay.bin

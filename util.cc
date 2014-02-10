@@ -344,10 +344,10 @@ string Util::urlEncode(string src) {
 	string ret;
 	unsigned int i;
 	for(i=0; i<src.length(); i++) {
-		if(src[i]==' ') { ret+="%20"; }
-		if(src[i]==':') { ret+="%58"; }
-		if(src[i]==';') { ret+="%59"; }
-		if(src[i]=='=') { ret+="%61"; }
+                if(     src[i]==' ') { ret+="%20"; }
+		else if(src[i]==':') { ret+="%58"; }
+		else if(src[i]==';') { ret+="%59"; }
+		else if(src[i]=='=') { ret+="%61"; }
 		else { ret+=src[i]; }
 	}
 	return (ret);

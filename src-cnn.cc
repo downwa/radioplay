@@ -51,7 +51,7 @@ int SrcCNN::hourlyNews() {
 		else { base=rssUrl; }
 		char path[1024];
 		snprintf(path,sizeof(path),"%s/%s",ndir,base);
-		util->enqueue(Time()+3600,string(rssUrl), string(path), 0, 120);
+		util->enqueue(Time()+3600,string(path), string(rssUrl), 0, 120);
 	}
 	return 0;
 }

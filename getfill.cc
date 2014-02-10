@@ -179,6 +179,8 @@ for( iter = fillPlaylist.begin(); iter != fillPlaylist.end() && count<5; iter++ 
 		strings ent("","");
 		ent=fillPlaylist.front();
 fprintf(stderr,"        line=%d Filler::getFiller#3: lenFile: one=%s,two=%s\n",__LINE__,ent.one.c_str(),ent.two.c_str());
+#error FIXME should use itemDecode here too!
+// e.g. one=2014-02-10 14:00:00; two=catcode=BIBLEANSWERS;expectSecs=3601;flag=366;url=/tmp/play3abn/cache/Radio/Amazing%20facts/ba20070715.ogg
 		vector<string>::iterator result;
 		char sLenFile[256];
 		const char *pp=ent.two.c_str(); // e.g. "365 0900 patt " (flag length pattern)

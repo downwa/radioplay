@@ -443,7 +443,7 @@ util->longsleep(9999);
 			if(getId("customsched",0)==0 || doDownload) {
 				// NOTE: false parameter to enqueue means we won't re-enqueue over existing timeslots.  
 				// NOTE: If there should be exceptions to this practice, implement them here.
-				util->enqueue(plNow,string(linked), dispname, scheduleAgeDays, sched[xa].len, false); // #1: Enqueue file if not existing
+				util->enqueue(plNow,dispname,string(linked), scheduleAgeDays, sched[xa].len, false); // #1: Enqueue file if not existing
 			}
 			//usleep(100000); // Sleep 1/10 second to avoid pegging the CPU
 			sleep(1); // Sleep one second to avoid pegging the CPU
@@ -808,7 +808,7 @@ MARK
 	// string baseurl="ftp://RadioAlaska:%s@ftp.3abn.org/OGG/";
 	string url=util->mergePassword(string(baseurl)+"/r/")+urlencode(sbase);
 	int scheduleAgeDays=(time(NULL)-day)/86400;
-	util->enqueue((day/86400*86400)+86400,url,spath,scheduleAgeDays,0); // #2: Enqueue download of schedule
+	util->enqueue((day/86400*86400)+86400,spath,url,scheduleAgeDays,0); // #2: Enqueue download of schedule
 	return ""; // Schedule not found
 }
 

@@ -79,18 +79,22 @@ SchedFixed::SchedFixed() {
 				if(entry->d_name[0]=='.') { continue; } // Skip hidden files
 				snprintf(linksrc,sizeof(linksrc),"%s/%s",playq,entry->d_name);
 				ssize_t ofs=readlink(linksrc, linktgt, sizeof(linktgt)-1);
-				if(ofs>=0) {
-					linktgt[ofs]=0; // contents of linktgt e.g. "TESTIMONY4 0060 http://radio.iglooware.com or /tmp/play3abn/cache/download/AfflBreak~20130314_152900~.ogg" (category, len, path)
+				if(ofs>=0) { // contents of linktgt e.g. "catcode=PROPHECY4;expectSecs=0124;flag=366;url=/tmp/play3abn/cache/Radio/My%20Music/Roy/RISE%20MY%20SOUL-Faith%20For%20Today-Qt.ogg"
+					linktgt[ofs]=0;
+					strings ent=strings(string(entry->d_name),string(linktgt));
+
+                time_t dt=0;
+                int flag=0,seclen=0;
+                string catcode="",dispname="",decodedUrl="";
+                int result=util->itemDecode(ent, dt, flag, seclen, catcode, dispname, decodedUrl);
+                if(result<0) {
+                        string playlink=string(playq)+"/"+ent.one;
+                        syslog(LOG_ERR,"SchedFixed: Invalid format (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
+                        remove(playlink.c_str()); continue;
+                }
 					struct stat statbuf;
-					char *path=strchr(linktgt,' ');
-					if(path) { path=strchr(&path[1],' '); }
-					else { syslog(LOG_ERR,"SchedFixed::SchedFixed#1: Missing size after flag in '%s'",linktgt); continue; }
-					if(path) { path=&path[1]; }
-					else { syslog(LOG_ERR,"SchedFixed::SchedFixed#2: Missing path after size in '%s'",linktgt); continue; }
-					if(strncmp(path, "http://",7)==0) { continue; } // Skip download items
-					if(strncmp(path, "ftp://",6)==0) { continue; } // Skip download items
-					if(stat(path, &statbuf)==-1) {
-syslog(LOG_ERR,"MISSING %s",path);
+					if(stat(decodedUrl.c_str(), &statbuf)==-1) {
+syslog(LOG_ERR,"MISSING %s",decodedUrl.c_str());
  continue; } // Skip non-existing items
 				}
 				playqlen++;
@@ -225,7 +229,7 @@ void SchedFixed::ScheduleDay(time_t schedNow, time_t now) {
 		util->findTarget(path,sizeof(path),&sItem[5]);
 		if(path[0]) {
 			//syslog(LOG_INFO,"  SCHED: %s [CODE: %s, seclen=%d, path=%s]",buf,code,seclen,path);
-			util->enqueue(plNow,string(path), string(code), scheduleAgeDays, seclen);
+			util->enqueue(plNow,string(code), string(path), scheduleAgeDays, seclen);
 		}
 		else {
 			syslog(LOG_ERR,"    NOT: %s [CODE: %s, sItem=%s]",buf,code,sItem);
@@ -249,7 +253,7 @@ void SchedFixed::ScheduleBufferX(string outbuffer) {
 // 	 //   - requested length [22]
 // 	 //   - actual length [27]
 // 	 //   - complete path [32]
-// 	 // enqueue(plNow, complete path, display name, scheduleAgeDays, actual length);
+// 	 // enqueue(plNow, code, complete path, scheduleAgeDays, actual length);
 // 	const char *startline=lines;
 // 	int linelen=0;
 // MARK
@@ -277,7 +281,7 @@ void SchedFixed::ScheduleBufferX(string outbuffer) {
 // 		// NOTE: atoi() actual length
 // 		int actLen=atoi(&buf[27]);
 // MARK
-// 		util->enqueue(plNow,string(linked), dispname, scheduleAgeDays, actLen);
+// 		util->enqueue(plNow,code, string(linked), scheduleAgeDays, actLen);
 // MARK
 // 		//usleep(100000); // Sleep 1/10 second to avoid pegging the CPU
 // 		//sleep(1); // Sleep one second to avoid pegging the CPU
