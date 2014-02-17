@@ -1,0 +1,26 @@
+First configuration does not work in some Windows:
+
+root@warrenlap:/home/likewise-open/CHOGGIUNG/wdowns# fdisk -l /dev/mmcblk0
+
+Disk /dev/mmcblk0: 31.9 GB, 31914983424 bytes
+4 heads, 16 sectors/track, 973968 cylinders, total 62333952 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x6f20736b
+
+        Device Boot      Start         End      Blocks   Id  System
+/dev/mmcblk0p1            2048    62333951    31165952    c  W95 FAT32 (LBA)
+root@warrenlap:/home/likewise-open/CHOGGIUNG/wdowns# ls /media/45DC-FF53
+root@warrenlap:/home/likewise-open/CHOGGIUNG/wdowns# fdisk -l /dev/mmcblk0
+
+Disk /dev/mmcblk0: 31.9 GB, 31914983424 bytes
+255 heads, 63 sectors/track, 3880 cylinders, total 62333952 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x000e90f7
+
+        Device Boot      Start         End      Blocks   Id  System
+/dev/mmcblk0p1            2048    62332927    31165440    b  W95 FAT32
+

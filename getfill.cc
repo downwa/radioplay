@@ -179,16 +179,33 @@ for( iter = fillPlaylist.begin(); iter != fillPlaylist.end() && count<5; iter++ 
 		strings ent("","");
 		ent=fillPlaylist.front();
 fprintf(stderr,"        line=%d Filler::getFiller#3: lenFile: one=%s,two=%s\n",__LINE__,ent.one.c_str(),ent.two.c_str());
-#error FIXME should use itemDecode here too!
 // e.g. one=2014-02-10 14:00:00; two=catcode=BIBLEANSWERS;expectSecs=3601;flag=366;url=/tmp/play3abn/cache/Radio/Amazing%20facts/ba20070715.ogg
-		vector<string>::iterator result;
-		char sLenFile[256];
+		/** Parse info string **/
+		time_t playAt=0;
+		int seclen=0;
+		string dispname="";
+		int flag=0;
+		string catcode="",url="";
+		int decResult=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, url);
+		if(decResult<0) {
+		  fprintf(stderr,"        line=%d Player::Execute: Invalid format1 (decResult=%d): %s => %s",__LINE__,decResult,ent.one.c_str(),ent.two.c_str());
+		  strings eent("","");
+		  return eent;
+		}
+		
+
+/*		
 		const char *pp=ent.two.c_str(); // e.g. "365 0900 patt " (flag length pattern)
 		const char *sLen=strchr(pp,' '); // Skip flag/catcode // sLen = " 0900 patt "
 		const char *sPath=sLen?&sLen[6]:pp; // sPath = "patt "
 		int len=sLen?atoi(&sLen[1]):0; // sLen e.g. " 0106 /tmp/play3abn/cache/Radio/My Music/..."
-fprintf(stderr,"        line=%d *** sLen=%s,sPath=%s,len=%d\n",__LINE__,sLen,sPath,len);		
+		fprintf(stderr,"        line=%d *** sLen=%s,sPath=%s,seclen=%d\n",__LINE__,sLen,sPath,seclen);		
+*/		
+		
+		
+		const char *sPath=url.c_str();
 		const char *relPath=sPath;
+		fprintf(stderr,"        line=%d *** relPath=%s,seclen=%d\n",__LINE__,relPath,seclen);
 		const char *qq="";
 		
 		/** Remove these prefixes **/
@@ -200,7 +217,10 @@ fprintf(stderr,"        line=%d *** sLen=%s,sPath=%s,len=%d\n",__LINE__,sLen,sPa
 			
 		if(relPath[0]=='/') { relPath++; } // Skip leading slash
 		
-		snprintf(sLenFile,sizeof(sLenFile),"%04d %s",len,relPath);
+		vector<string>::iterator result;
+		char sLenFile[256];
+		
+		snprintf(sLenFile,sizeof(sLenFile),"%04d %s",seclen,relPath);
 //fprintf(stderr,"        line=%d DEBUG2: sLenFile=%s.",__LINE__,sLenFile);
 // 		syslog(LOG_INFO,"lenFile=%s",sLenFile);
 fprintf(stderr,"        line=%d lenFile=%s (qq=%s,sPath=%s,two=%s\n",__LINE__,sLenFile,qq,sPath,ent.two.c_str());
@@ -221,7 +241,7 @@ fprintf(stderr,"        line=%d lenFile=%s (qq=%s,sPath=%s,two=%s\n",__LINE__,sL
 
 		//#fixme Verify erase worked: we're repeating the same lenFile= meaning the list item was not removed
 		
-		// NOTE: "2011-06-09 12:40:00 0066 IT'S A WONDERFUL DAY-Heritage Singers.ogg" (datetime=0; len=20; name=25)
+		// NOTE: "2011-06-09 12:40:00 0066 IT'S A WONDERFUL DAY-Heritage Singers.ogg" (datetime=0; seclen=20; name=25)
 		//        0123456789 123456789
 		fillname=ent.one;
 		ent.one=Util::fmtTime(now)+ent.one.substr(19); // Reschedule for now
