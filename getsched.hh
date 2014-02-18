@@ -40,6 +40,6 @@ public:
 	Scheduled();
 
 	void initFiller();
-	strings getFiller(int maxLen, string& fillname);
+	strings getFiller(int maxLen);
 	strings getScheduled(bool& isFiller, time_t now);
 };

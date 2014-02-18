@@ -90,26 +90,18 @@ strings Player::getScheduled() {
   }
   int len=strlen(rpy);
   if(rpy[len-1]=='\n' || rpy[len-1]=='\r') { rpy[len-1]=0; }
-  char *secLen=NULL;
-  char *dispname=NULL;
-  char *path=NULL;
-
   errno = 0;
-
-  secLen=buf;
+  
+  char *info=NULL;
+  char *playAt=buf;
   char *pp=strchr(buf,'|');
-  if(pp) { *pp=0; pp++; dispname=pp; }
-  pp=strchr(dispname,'|');
-  if(pp) { *pp=0; pp++; path=pp; }
-  syslog(LOG_INFO,"getScheduled: secLen=%s,dispname=%s,path=%s",secLen,dispname,path);
-    //printf("secLen=%d,dispname=%s,path=%s\n",secLen,dispname,path);
-  // NOTE:    infs.one=2014-01-22 19:00:00 -1
-  // NOTE:    infs.two=BIBLESTORIES 1377 /tmp/play3abn/cache/Radio/Bible stories/Vol 01/V1-06a  The Disappearing Idols.ogg
-  // NOTE: SHOULD BE:
+  if(pp) { *pp=0; pp++; info=pp; }
+  pp=strchr(info,'\n');
+  if(pp) { *pp=0; }
+  syslog(LOG_INFO,"getScheduled: playAt=%s,info=%s",playAt,info); 
   // NOTE:    infs.one=2014-02-10 14:00:00
   // NOTE:    infs.two=catcode=BIBLEANSWERS;expectSecs=3601;flag=366;url=/tmp/play3abn/cache/Radio/Amazing%20facts/ba20070715.ogg
-  // strings ent(Util::fmtTime(0)+" -1 "+string(dispname),"FIXMECAT "+string(secLen)+" "+string(path)); // Unscheduled, age one year, include length and fillname=dispname;
-  strings ent(Util::fmtTime(0),"catcode=FIXME;expectSecs="+string(secLen)+";flag=366;url= "+string(path));
+  strings ent=strings(playAt,info);
   return ent;
 }
 
@@ -147,7 +139,7 @@ MARK
 		int elapsed=(now-playAt);
 		const char *pname=ent.one.c_str();
 		const char *ppath=url.c_str();
-		syslog(LOG_ERR,"1seclen=%d,one=%s,two=%s",seclen,pname,ppath);		
+		syslog(LOG_ERR,"1seclen=%d,pname=%s,ppath=%s",seclen,pname,ppath);		
 /** PLAY IT only if found **/
 		struct stat statbuf;
 		if(stat(ppath, &statbuf)==-1) {
@@ -161,8 +153,9 @@ MARK
 
 		/** Copy to temp dir so filesystem can be unmounted while playing (for switching program sources) **/
 		char playtemp[1024];
-		strings ent2=util->itemEncode(playAt, flag, seclen, catcode, url);
-		snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%s %s",	Util::TEMPPATH,ent2.one.c_str(),ent2.two.c_str());
+		snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%s %s",	Util::TEMPPATH,ent.one.c_str(),dispname.c_str());
+		//strings ent2=util->itemEncode(playAt, flag, seclen, catcode, url);
+		//snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%s %s",	Util::TEMPPATH,ent2.one.c_str(),ent2.two.c_str());
 MARK
 		util->copyFile(ppath,playtemp);
 // FIXME BELOW LINES ARE THEY NEEDED?
@@ -313,9 +306,9 @@ syslog(LOG_ERR,"Calling open_audio_device from openTestAudio");
 	if(enqbuf) { // Fill buffer with enough silence to trigger playback readiness
 		memset(enqbuf,0,sizeof(buf));
 		audioq->enq(enqbuf,sizeof(buf),fileindex++,decoder->blockindex++);
-#ifndef RPI
-		if(system("ls -ld /proc/$(pidof mplay.bin)/fd/* >/tmp/mplay.err")<0) { syslog(LOG_ERR,"ls(pid)#1: %s",strerror(errno)); }
-#endif
+// #ifndef RPI
+// 		if(system("ls -ld /proc/$(pidof mplay.bin)/fd/* >/tmp/mplay.err")<0) { syslog(LOG_ERR,"ls(pid)#1: %s",strerror(errno)); }
+// #endif
 		util->setInt("fileindex",fileindex);
 	}
 	else { syslog(LOG_ERR,"test audio2:malloc error: %s",strerror(errno)); }

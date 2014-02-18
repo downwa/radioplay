@@ -192,20 +192,14 @@ int Play3ABN::SendSignal(const char *progname, int signum) {
 void Play3ABN::RunBackground(const char *cmdname) {
 	char cmd[1024]={0};
 	if(strcmp(cmdname,"mscreen")==0) {
-		char logpath[256];
-		snprintf(logpath,sizeof(logpath),"/tmp/play3abn/curlogs/out-%s.log.txt",cmdname); // log path
-		snprintf(cmd,sizeof(cmd),"mv -f %s.bak %s.bak2; mv -f %s %s.bak; %s/%s %s >%s 2>&1 >%s <%s &",
-						 logpath,logpath,logpath,logpath, // Rename the previous two logs for this command
-						 basedir,cmdname,tty,logpath,tty,tty); // Run command with logging
+	  char logpath[256];
+	  snprintf(logpath,sizeof(logpath),"/tmp/play3abn/curlogs/out-%s.log.txt",cmdname); // log path
+	  snprintf(cmd,sizeof(cmd),"mv -f %s.bak %s.bak2; mv -f %s %s.bak; %s/%s %s >%s 2>&1 >%s <%s &",
+					    logpath,logpath,logpath,logpath, // Rename the previous two logs for this command
+					    basedir,cmdname,tty,logpath,tty,tty); // Run command with logging
 	}
 	else {
-// 		#ifndef ARM /** USE PulseAudio if not on ARM platform **/
-// 			if(strcmp(cmdname,"mplay")==0) {
-// 				snprintf(cmd,sizeof(cmd),"LD_PRELOAD=%s/libs/libpulsedsp.so %s/%s %s >/tmp/play3abn/curlogs/out-%s.log.txt 2>&1 &",
-// 					basedir,basedir,cmdname,tty,cmdname);
-// 			}
-// 		#endif
-		if(!cmd[0]) { snprintf(cmd,sizeof(cmd),"%s/%s %s >/tmp/play3abn/curlogs/out-%s.log.txt 2>&1 &",basedir,cmdname,tty,cmdname); }
+	  if(!cmd[0]) { snprintf(cmd,sizeof(cmd),"%s/%s %s >/tmp/play3abn/curlogs/out-%s.log.txt 2>&1 &",basedir,cmdname,tty,cmdname); }
 	}
 	//syslog(LOG_NOTICE,"system(%s)",cmd);
 	if(system(cmd)==-1) { syslog(LOG_ERR,"system: %s: %s",cmd,strerror(errno)); }

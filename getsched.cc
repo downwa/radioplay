@@ -31,34 +31,29 @@ void Scheduled::initFiller() {
 	if(!fillsReq) { syslog(LOG_ERR,"fopen /tmp/play3abn/fills failed: %s",strerror(errno)); exit(1); }	
 }
 
-strings Scheduled::getFiller(int maxLen, string& fillname) {
-	syslog(LOG_INFO,"getFiller(maxLen=%d)",maxLen);
-	if(!fillsReq || !fillsRpy) { initFiller(); }
+strings Scheduled::getFiller(int maxLen) {
+  syslog(LOG_INFO,"getFiller(maxLen=%d)",maxLen);
+  if(!fillsReq || !fillsRpy) { initFiller(); }
   fprintf(fillsReq,"%d\n",maxLen); fflush(fillsReq);
-	char buf[1024];
-	char *rpy=fgets(buf, sizeof(buf), fillsRpy);
-	if(!rpy) {
-		syslog(LOG_ERR,"fillsRpy: %s",strerror(errno));
-		initFiller();
-	}
-	int len=strlen(rpy);
-	if(rpy[len-1]=='\n' || rpy[len-1]=='\r') { rpy[len-1]=0; }
-  char *secLen=NULL;
-  char *dispname=NULL;
-  char *path=NULL;
-
+  char buf[1024];
+  char *rpy=fgets(buf, sizeof(buf), fillsRpy);
+  if(!rpy) {
+	  syslog(LOG_ERR,"fillsRpy: %s",strerror(errno));
+	  initFiller();
+  }
+  int len=strlen(rpy);
+  if(rpy[len-1]=='\n' || rpy[len-1]=='\r') { rpy[len-1]=0; }
   errno = 0;
-	secLen=buf;
-	char *pp=strchr(buf,'|');
-	if(pp) { *pp=0; pp++; dispname=pp; }
-	pp=strchr(dispname,'|');
-	if(pp) { *pp=0; pp++; path=pp; }
-	syslog(LOG_INFO,"getFiller: secLen=%s,dispname=%s,path=%s",secLen,dispname,path);
-		//printf("secLen=%d,dispname=%s,path=%s\n",secLen,dispname,path);
-	// NOTE:    infs.one=2014-01-22 19:00:00 -1
-	// NOTE:    infs.two=BIBLESTORIES 1377 /tmp/play3abn/cache/Radio/Bible stories/Vol 01/V1-06a  The Disappearing Idols.ogg
-  strings ent(Util::fmtTime(0)+" -1 "+string(dispname),"FILLER "+string(secLen)+" "+string(path)); // Unscheduled, age one year, include length and
-  fillname=dispname;
+  char *info=NULL;
+  char *playAt=buf;
+  char *pp=strchr(buf,'|');
+  if(pp) { *pp=0; pp++; info=pp; }
+  pp=strchr(info,'\n');
+  if(pp) { *pp=0; }
+  syslog(LOG_INFO,"getFiller: playAt=%s,info=%s",playAt,info);
+  // NOTE:    infs.one=2014-01-22 19:00:00 -1
+  // NOTE:    infs.two=BIBLESTORIES 1377 /tmp/play3abn/cache/Radio/Bible stories/Vol 01/V1-06a  The Disappearing Idols.ogg
+  strings ent=strings(playAt,info);
   return ent;
 }
 /*******************************************************************/
@@ -97,7 +92,6 @@ MARK
 
 //fprintf(stdout,"hourRemaining=%d,nid=%d\n",hourRemaining,hitNetworkID);
 
-	string fillname="";
 	//bool hasProg=false;
 	int silentFill=getITd("silentfill",0);
 	char curplaytgt[1024];
@@ -105,16 +99,15 @@ MARK
 
 	if(playlist.size()==0 || (hitNetworkID && hourRemaining>20)) {
 		syslog(LOG_INFO,"TOO EARLY FOR NETWORK ID: FILLING (hourRemaining=%d)",hourRemaining);
-		ent=getFiller(hourRemaining-15,fillname); isFiller=true;
+		ent=getFiller(hourRemaining-15); isFiller=true;
 	}
 	else if(silentFill>0) {
 					syslog(LOG_ERR,"SILENCE FILL(%d): previous file=%s.",silentFill,curplaytgt);
 					if(strstr(curplaytgt,"/download/")) { remove(curplaytgt); } /** DON'T KEEP SILENT FILES THAT WERE DOWNLOADED **/
-					ent=getFiller(silentFill,fillname); isFiller=true;
+					ent=getFiller(silentFill); isFiller=true;
 	}
-	else { fillname=ent.one; //hasProg=true;
-		syslog(LOG_INFO,"getScheduled: playqdir=%s: one=%s; two=%s",playqdir,ent.one.c_str(),ent.two.c_str());
-		isFiller=false;
+	else { syslog(LOG_INFO,"getScheduled: playqdir=%s: one=%s; two=%s",playqdir,ent.one.c_str(),ent.two.c_str());
+	  isFiller=false;
 	}
 	return saveEnt;
 }
@@ -180,7 +173,7 @@ Jan 23 16:41:38 warrenlap getsched: Scheduled::Execute: CATCH UP (remaining=-637
 			}
 		} while(tooLate);
 //fprintf(stderr,"isFiller=%d,tooLate=%d\n",isFiller,tooLate);
-		printf("%ld|%04d|%s|%s\n",playAt,seclen,dispname.c_str(),ent.two.c_str());
+		printf("%s|%s\n",ent.one.c_str(),ent.two.c_str());
 		fflush(stdout);
 		sleep(1);
 	}

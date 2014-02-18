@@ -2,8 +2,6 @@ CX=$(CXX) -O -fno-inline -g -Wall -Werror -m32 -L./libs/ -L./libs/32 -L./libs/64
 #CX=$(CXX) -O -fno-inline -g -Wall -Werror -L./libs/ -L./libs/32 -L./libs/64 -I./libs #-L/usr/lib/i386-linux-gnu/
 
 all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched # lrucache
-	@#sudo chown root.root play3abn src-3abn mdown mscreen getarc
-	@#sudo chmod +s play3abn src-3abn mdown mscreen getarc
 
 links:
 	@ln -sf ../*.cc ../*.hh ../stacktrace.h ../logerr.h ../libs ../FillerPlaylist*.txt ../CodeCategories.txt ../vars .
@@ -25,8 +23,6 @@ outscreen_saver.o: outscreen_saver.cc outscreen_saver.hh
 
 play3abn: play3abn.cc play3abn.hh libradioutil.so thread.o out.o outscreen.o outscreen_input.o outscreen_saver.o thread.o
 	$(CX) -o play3abn thread.o out.o outscreen.o outscreen_input.o outscreen_saver.o -L. -lradioutil -lncurses -ltinfo -lpthread play3abn.cc
-	@#sudo chown root.root play3abn
-	@#sudo chmod +s play3abn
 
 src-3abn: src-3abn.cc src-3abn.hh libradioutil.so libdecoder.so thread.o src-3abn.o
 	$(CX) -o src-3abn src-3abn.o thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lvorbisfile
@@ -43,7 +39,7 @@ ogglen: ogglen.cc maindec.hh util.hh libradioutil.so libdecoder.so thread.o
 MPLAYOBJS=mplay.o src-fill.o thread.o
 mplay: $(MPLAYOBJS) libradioutil.so libdecoder.so /usr/bin/madplay
 	$(CX) -o mplay $(MPLAYOBJS) -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lpulse -lpulse-simple -lasound -lvorbisfile
-	sudo chmod +s mplay
+	sudo chmod +x mplay
 
 getfill: getfill.o thread.o
 	$(CX) -o getfill getfill.o thread.o -L. -lradioutil -lpthread

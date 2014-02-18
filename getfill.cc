@@ -282,18 +282,18 @@ MARK
 		if(scanf("%d",&filllen) < 1) { break; }
 		ent=getFiller(filllen,fillname);
                 /** Parse info string **/
-                time_t playAt=0;
-                int seclen=0;
-                string dispname="";
-		int flag=0;
-		string catcode="",url="";
-		int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, url);
-		if(result<0) {
-		  fprintf(stderr,"        line=%d Player::Execute: Invalid format1 (result=%d): %s => %s",__LINE__,result,ent.one.c_str(),ent.two.c_str());
-		  continue;
-		}
-		printf("%04d|%s|%s\n",seclen,("FILLER-"+dispname).c_str(),ent.two.c_str());
-		fflush(stdout);
+//                 time_t playAt=0;
+//                 int seclen=0;
+//                 string dispname="";
+// 		int flag=0;
+// 		string catcode="",url="";
+// 		int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, url);
+// 		if(result<0) {
+// 		  fprintf(stderr,"        line=%d Player::Execute: Invalid format1 (result=%d): %s => %s",__LINE__,result,ent.one.c_str(),ent.two.c_str());
+// 		  continue;
+// 		}
+	  printf("%s|%s\n",ent.one.c_str(),ent.two.c_str());
+	  fflush(stdout);
 	}
 MARK
 }
