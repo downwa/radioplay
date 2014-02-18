@@ -107,6 +107,7 @@ MARK
 					ent=getFiller(silentFill); isFiller=true;
 	}
 	else { syslog(LOG_INFO,"getScheduled: playqdir=%s: one=%s; two=%s",playqdir,ent.one.c_str(),ent.two.c_str());
+		fprintf(stderr,"getScheduled: playqdir=%s: one=%s; two=%s\n",playqdir,ent.one.c_str(),ent.two.c_str());
 	  isFiller=false;
 	}
 	return saveEnt;

@@ -104,7 +104,7 @@ void Util::set(const char *varName, const char *varVal) {
 	}
   FILE *fp=fopen(fname,"wb");
   if(!fp) { syslog(LOG_ERR,"set: %s: %s",fname,strerror(errno)); 
-		if(system("ls -ld /proc/$(pidof mplay.bin)/fd/* >/tmp/mplay.err")<0) { syslog(LOG_ERR,"ls(pid)#1: %s",strerror(errno)); }
+//		if(system("ls -ld /proc/$(pidof mplay.bin)/fd/* >/tmp/mplay.err")<0) { syslog(LOG_ERR,"ls(pid)#1: %s",strerror(errno)); }
 	abort(); }
   fprintf(fp,"%s",varVal);
   fclose(fp);
@@ -344,7 +344,7 @@ string Util::urlEncode(string src) {
 	string ret;
 	unsigned int i;
 	for(i=0; i<src.length(); i++) {
-                if(     src[i]==' ') { ret+="%20"; }
+    if(     src[i]==' ') { ret+="%20"; }
 		else if(src[i]==':') { ret+="%58"; }
 		else if(src[i]==';') { ret+="%59"; }
 		else if(src[i]=='=') { ret+="%61"; }
@@ -681,7 +681,7 @@ void Util::listThreadMarks(Util* util) {
 void Util::signalexit(string signame, bool ex) {
 	//if(oscreen) { oscreen->Shutdown(); }
 	Util* util=new Util("signalexit");
-	FILE *logfp=util->getlog(NULL);
+	//FILE *logfp=util->getlog(NULL);
 	// FIXME: Check to see if mscreen is running.  If not, do this: setIT("doLogStderr",1);
 	syslog(LOG_ERR,"%s in play3abn.",signame.c_str());
 	//sleep(5);
@@ -690,8 +690,8 @@ void Util::signalexit(string signame, bool ex) {
 	syslog(LOG_ERR,"Function calls:");
 	listThreadMarks(util);
 	print_stacktrace(stderr);
-	print_stacktrace(logfp);
-	fclose(logfp);
+	//print_stacktrace(logfp);
+	//fclose(logfp);
 	exit(1);
 }
 

@@ -86,6 +86,7 @@ strings Player::getScheduled() {
   char *rpy=fgets(buf, sizeof(buf), schedRpy);
   if(!rpy) {
     syslog(LOG_ERR,"schedRpy: %s",strerror(errno));
+    fprintf(stderr,"schedRpy: %s\n",strerror(errno));
     initScheduled();
   }
   int len=strlen(rpy);
@@ -99,6 +100,7 @@ strings Player::getScheduled() {
   pp=strchr(info,'\n');
   if(pp) { *pp=0; }
   syslog(LOG_INFO,"getScheduled: playAt=%s,info=%s",playAt,info); 
+  fprintf(stderr,"getScheduled: playAt=%s,info=%s\n",playAt,info); 
   // NOTE:    infs.one=2014-02-10 14:00:00
   // NOTE:    infs.two=catcode=BIBLEANSWERS;expectSecs=3601;flag=366;url=/tmp/play3abn/cache/Radio/Amazing%20facts/ba20070715.ogg
   strings ent=strings(playAt,info);
@@ -140,6 +142,7 @@ MARK
 		const char *pname=ent.one.c_str();
 		const char *ppath=url.c_str();
 		syslog(LOG_ERR,"1seclen=%d,pname=%s,ppath=%s",seclen,pname,ppath);		
+		fprintf(stderr,"1seclen=%d,pname=%s,ppath=%s\n",seclen,pname,ppath);		
 /** PLAY IT only if found **/
 		struct stat statbuf;
 		if(stat(ppath, &statbuf)==-1) {
@@ -157,6 +160,7 @@ MARK
 		//strings ent2=util->itemEncode(playAt, flag, seclen, catcode, url);
 		//snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%s %s",	Util::TEMPPATH,ent2.one.c_str(),ent2.two.c_str());
 MARK
+		fprintf(stderr,"copyFile: src=%s, dst=%s\n",ppath,playtemp);
 		util->copyFile(ppath,playtemp);
 // FIXME BELOW LINES ARE THEY NEEDED?
 //		strncpy(prevfile,ppath,sizeof(prevfile));
@@ -167,10 +171,13 @@ MARK
 /** FIXME Crashed in decode.  Why? **/
 		int seekSecs=elapsed<30?0:elapsed;
 		syslog(LOG_ERR,"Decode(playtemp=%s,seekSecs=%d)",playtemp,seekSecs);
+
+		fprintf(stderr,"Decode(playtemp=%s,seekSecs=%d)\n",playtemp,seekSecs);
 		fflush(stderr);
 MARK
 		decoder->Decode(playtemp,seekSecs);
 MARK
+		fprintf(stderr,"Decode Finished(playtemp=%s,seekSecs=%d)\n",playtemp,seekSecs);
 		syslog(LOG_ERR,"Decode Finished(playtemp=%s,seekSecs=%d)",playtemp,seekSecs);
 MARK
 		utime(ppath,NULL); // Mark file as recently played

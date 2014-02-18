@@ -21,3 +21,9 @@ checkin: # e.g. downwa
 bin:
 	mkdir -p $(ARCH)
 	make -f ../Makefile.$(ARCH) -C $(ARCH)/ #2>&1 | more
+
+install: bin
+	cd $(ARCH) && sudo cp -av lib*.so /lib/i386-linux-gnu/
+
+run: bin install
+	sudo mount --bind /home/warren/RadioSD/UPDATE3ABN /media/RadioSD && cd $(ARCH) && sudo ./play3abn && cd .. && sudo umount /media/RadioSD

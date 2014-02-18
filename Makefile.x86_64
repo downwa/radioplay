@@ -3,6 +3,9 @@ CX=$(CXX) -O -fno-inline -g -Wall -Werror -m32 -L./libs/ -L./libs/32 -L./libs/64
 
 all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched # lrucache
 
+run: all
+	cd x86_64 && sudo ./play3abn && cd ..
+
 links:
 	@ln -sf ../*.cc ../*.hh ../stacktrace.h ../logerr.h ../libs ../FillerPlaylist*.txt ../CodeCategories.txt ../vars .
 
@@ -39,15 +42,15 @@ ogglen: ogglen.cc maindec.hh util.hh libradioutil.so libdecoder.so thread.o
 MPLAYOBJS=mplay.o src-fill.o thread.o
 mplay: $(MPLAYOBJS) libradioutil.so libdecoder.so /usr/bin/madplay
 	$(CX) -o mplay $(MPLAYOBJS) -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lpulse -lpulse-simple -lasound -lvorbisfile
-	sudo chmod +x mplay
+	chmod +x mplay
 
 getfill: getfill.o thread.o
 	$(CX) -o getfill getfill.o thread.o -L. -lradioutil -lpthread
-	sudo chmod +x getfill
+	chmod +x getfill
 
 getsched: getsched.o thread.o
 	$(CX) -o getsched getsched.o thread.o -L. -lradioutil -lpthread
-	sudo chmod +x getsched
+	chmod +x getsched
 
 
 #mplay: runplay.cc
@@ -118,10 +121,10 @@ getarc: getarc.cc getarc.hh
 run2: mdown
 	sudo LD_LIBRARY_PATH=. ./mdown
 
-run: play3abn
-	@#sudo rm -fr /tmp/play3abn/ # pasuspender aoss
-	@#sudo LD_LIBRARY_PATH=.  aoss ./play3abn
-	LD_LIBRARY_PATH=.:libs ./play3abn
+#run: play3abn
+#	@#sudo rm -fr /tmp/play3abn/ # pasuspender aoss
+#	@#sudo LD_LIBRARY_PATH=.  aoss ./play3abn
+#	LD_LIBRARY_PATH=.:libs ./play3abn
 
 stop:
 	./stop.sh
