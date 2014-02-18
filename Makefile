@@ -26,4 +26,4 @@ install: bin
 	cd $(ARCH) && sudo cp -av lib*.so /lib/i386-linux-gnu/
 
 run: bin install
-	sudo mount --bind /home/warren/RadioSD/UPDATE3ABN /media/RadioSD && cd $(ARCH) && sudo ./play3abn && cd .. && sudo umount /media/RadioSD
+	sudo mount --bind /home/warren/RadioSD/UPDATE3ABN /media/RadioSD && cd $(ARCH) && ln -sf ../get*.sh . && ./play3abn && cd .. && sudo umount /media/RadioSD

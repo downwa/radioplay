@@ -360,8 +360,9 @@ string Util::urlEncode(string src) {
 /** NOTE: (expectSecs and file Last Used date can ALSO be retrieved from leastrecentcache/cached entries)   **/
 /** NOTE: dispname can be derived from url                                                                  **/
 /** NOTE: If replaceExisting is false, we will instead create an entry for the next second for existing one **/
-void Util::enqueue(time_t playAt, string url, string catcode, int flag, int expectSecs, bool replaceExisting) {
-	strings item=itemEncode(playAt, flag, expectSecs, url, catcode);
+void Util::enqueue(time_t playAt, string catcode, string url, int flag, int expectSecs, bool replaceExisting) {
+	//itemEncode(time_t playAt, int flag, int expectSecs, string catcode, string url)
+	strings item=itemEncode(playAt, flag, expectSecs, catcode, url);
 	char tmpentry[1024];
 	strncpy(tmpentry,item.one.c_str(),sizeof(tmpentry)-4);
 	strcat(tmpentry,".tmp");
@@ -394,9 +395,13 @@ strings Util::itemEncode(time_t playAt, int flag, int expectSecs, string catcode
  * OUTPUT: scheduled time, flag, playback seconds, category code, decoded URL or local file path **/
 int Util::itemDecode(strings infs, time_t& otime, int& flag, int& expectSecs, string& catcode, string& dispname, string& decodedUrl) {
 	/** DECODE otime **/
+	const char *linksrc=infs.one.c_str();
+	const char *timeS=strrchr(linksrc,'/');
+	if(!timeS) { timeS=linksrc; }
+	else { timeS++; }
 	struct tm timestruct={0};
-	char *result=strptime(infs.one.c_str(),"%Y-%m-%d %H:%M:%S",&timestruct);
-	if(!result) { return -2; }
+	char *result=strptime(timeS,"%Y-%m-%d %H:%M:%S",&timestruct);
+	if(!result) { fprintf(stderr,"timeS=%s\n",timeS); return -2; }
 	int tzHour=(timezone-Util::tzofs); // 0 or 3600 depending on whether DST is in effect
 	otime=mktime(&timestruct)-tzHour; //+Util::bufferSeconds; // Play some time after scheduled time
 	if(otime==-1) { return -1; }
@@ -428,6 +433,7 @@ int Util::itemDecode(strings infs, time_t& otime, int& flag, int& expectSecs, st
 	string dispPrefix="";
 	if(catcode != "") { dispPrefix=catcode+":"; }
 	dispname=dispPrefix+string(qq);
+	syslog(LOG_ERR,"itemDecode: DISPNAME: dispPrefix=%s,qq=%s,decodedUrl=%s,catcode=%s; dispname=%s",dispPrefix.c_str(),qq,decodedUrl.c_str(),catcode.c_str(),dispname.c_str());
 
 	return -ret;
 }		
@@ -995,7 +1001,9 @@ fprintf(stderr,"        Util::getPlaylist: vector len=%d,limit=%d,sortMode=%d,ma
 		//strncpy(entry.d_name,dispname,sizeof(entry.d_name)-1);
 		//entry.d_name[sizeof(entry.d_name)-1]=0;
 		//strings ent(Util::fmtTime(0)+" 365 "+string(dispname),string(filepath)); // Unscheduled, age one year, include length and
-		strings ent(Util::fmtTime(0)+" -1","365 "+string(item,0,4)+" "+string(filepath)); // Unscheduled, age one year, include length and
+		// itemEncode(time_t playAt, int flag, int expectSecs, string catcode, string url)
+		strings ent=itemEncode(0, 365, seclen, "", string(filepath));
+		//strings ent(Util::fmtTime(0)+" -1","365 "+string(item,0,4)+" "+string(filepath)); // Unscheduled, age one year, include length and
 if(!filepath[0]) { fprintf(stderr,"                ***Util::getPlaylist: filepath=%s,shortpath=%s\n",filepath,shortpath); }
 		//strings ent(string(test/*dispname*/),string(filepath));
 		if(maxLen>0 && seclen>maxLen) { continue; } // Exclude too-long files

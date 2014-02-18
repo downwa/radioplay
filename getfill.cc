@@ -244,7 +244,7 @@ fprintf(stderr,"        line=%d lenFile=%s (qq=%s,sPath=%s,two=%s\n",__LINE__,sL
 		// NOTE: "2011-06-09 12:40:00 0066 IT'S A WONDERFUL DAY-Heritage Singers.ogg" (datetime=0; seclen=20; name=25)
 		//        0123456789 123456789
 		fillname=ent.one;
-		ent.one=Util::fmtTime(now)+ent.one.substr(19); // Reschedule for now
+		//ent.one=Util::fmtTime(now)+ent.one.substr(19); // Reschedule for now
 		fprintf(stderr,"        line=%d Filler::getFiller#99: fill count=%d; one=%s,two=%s\n",__LINE__,
 					 fillPlaylist.size(),ent.one.c_str(),ent.two.c_str());
 		//fprintf(stderr,"        line=%d Player::getFiller#3: "+ent.two,__LINE__);

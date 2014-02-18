@@ -162,7 +162,7 @@ syslog(LOG_INFO,"DATE: colnum=%d,xo=%d",colnum,xo);
 	}
 	else if(ACT("NTP Date")) {
 		syslog(LOG_ERR,"Starting ./ntpdate.sh");
-		if(system("./ntpdate.sh")<0) { syslog(LOG_ERR,"./ntpdate.sh failure"); }
+		if(system("./ntpdate.sh 2>/tmp/play3abn/ntpdate.log")<0) { syslog(LOG_ERR,"./ntpdate.sh failure"); }
 	}
 	else if(ACT("Cancel Update")) {
 		syslog(LOG_ERR,"Cancelling update.sh");
@@ -574,8 +574,8 @@ int Out::UpdatePlaying(int row) {
 	// /tmp/play3abn/tmp/playtmp-2012-03-06 09:00:01 0 3479 One_Second_Time_Fill~Simulcast_Of_3abn_Tv's_Today_L~3ABN_TODAY_RADIO_BREAK_2~.ogg
 
 	time_t playAt=0;
-	int flag,seclen=0;
-	string catcode="", url="";
+//	int flag,seclen=0;
+//	string catcode="", url="";
 	string dispname="(No file playing)";
 	if(playfile[0]) {
 		char *pp=strchr(playfile,'-');
@@ -583,13 +583,15 @@ int Out::UpdatePlaying(int row) {
 		char *qq=strchr(&pp[1],' ');
 		if(!qq) { syslog(LOG_ERR,"Out::UpdatePlaying: Invalid format1: %s",playfile); return row; }
 		*qq=0;
-		strings ent=strings(string(&pp[1]),&qq[1]);
-		int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, url);
-		if(result<0) {
-			syslog(LOG_ERR,"Out::UpdatePlaying: Invalid format2 (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
-			remove(playfile);
-			return row;
-		}
+		playAt=atol(&pp[1]);
+		dispname=string(&qq[1]);
+// 		strings ent=strings(string(&pp[1]),&qq[1]);
+// 		int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, url);
+// 		if(result<0) {
+// 			syslog(LOG_ERR,"Out::UpdatePlaying: Invalid format2 (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
+// 			remove(playfile);
+// 			return row;
+// 		}
 	}
 	prevPlayAt=playAt;
 	const char *playing=dispname.c_str();

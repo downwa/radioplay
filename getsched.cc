@@ -75,8 +75,8 @@ MARK
 	int seclen=0;
 	string dispname="";
 	/** Parse info string **/
-	strings saveEnt=ent;
-	saveEnt.two=string(saveEnt.two.c_str());
+	//strings saveEnt=ent;
+	//saveEnt.two=string(saveEnt.two.c_str());
 //syslog(LOG_INFO,"FIRST one=%s,two=%s",ent.one.c_str(),ent.two.c_str());
 	string catcode="";
 	string decodedUrl="";
@@ -89,6 +89,7 @@ MARK
 //syslog(LOG_INFO,"SECND one=%s,two=%s,scheduleAgeDays=%d,seclen=%d",saveEnt.one.c_str(),saveEnt.two.c_str(), scheduleAgeDays, seclen);
 	bool tooLate=(now > playAt+seclen);
 	if(tooLate) { hitNetworkID=false; } // Skip it
+	bool tooEarly=(now < playAt);
 
 //fprintf(stdout,"hourRemaining=%d,nid=%d\n",hourRemaining,hitNetworkID);
 
@@ -97,7 +98,12 @@ MARK
 	char curplaytgt[1024];
   getST(curplaytgt);
 
-	if(playlist.size()==0 || (hitNetworkID && hourRemaining>20)) {
+	if(tooEarly) {
+		int fillSecs=playAt-now;
+		syslog(LOG_INFO,"TOO EARLY FOR SCHEDULE: FILLING (fillSecs=%d)",fillSecs);
+		ent=getFiller(fillSecs); isFiller=true;
+	}
+	else if(playlist.size()==0 || (hitNetworkID && hourRemaining>20)) {
 		syslog(LOG_INFO,"TOO EARLY FOR NETWORK ID: FILLING (hourRemaining=%d)",hourRemaining);
 		ent=getFiller(hourRemaining-15); isFiller=true;
 	}
@@ -110,7 +116,7 @@ MARK
 		fprintf(stderr,"getScheduled: playqdir=%s: one=%s; two=%s\n",playqdir,ent.one.c_str(),ent.two.c_str());
 	  isFiller=false;
 	}
-	return saveEnt;
+	return ent;
 }
 
 /** NOTE: Read a directory of links of the following form:
@@ -134,6 +140,9 @@ MARK
 			count=0;
 		}
 		prevTime=now;
+		time_t schedTime;
+		if(scanf("%ld",&schedTime) < 1) { break; }
+		fprintf(stderr,"getsched: Requesting schedule for time %ld\n",schedTime);
 		char playlink[1024]={0};
 MARK
 		bool isFiller=false;
@@ -151,7 +160,7 @@ MARK
 			/** Parse info string **/
 			int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, decodedUrl);
 			if(result<0) {
-			  fprintf(stderr,"        line=%d Player::Execute: Invalid format1 (result=%d): %s => %s\n",__LINE__,result,ent.one.c_str(),ent.two.c_str());
+			  fprintf(stderr,"        line=%d getsched::Execute: Invalid format1 (result=%d): %s => %s\n",__LINE__,result,ent.one.c_str(),ent.two.c_str());
 			  continue;
 			}
 			//const char *pname=dispname.c_str();

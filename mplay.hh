@@ -28,6 +28,7 @@
 
 class Player: Thread {
 	FILE *schedRpy;
+	FILE *schedReq;
 	Taudioq* audioq;
 	Decoder* decoder;
 //	SrcFill* srcfill;

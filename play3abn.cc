@@ -289,7 +289,7 @@ void Play3ABN::updateDate(bool isBoot) {
 	if(isBoot) { syslog(LOG_INFO,"\rSetting date...\r"); }
 	syslog(LOG_ERR,"updateDate");
 	char cmd[1024];
-	snprintf(cmd,sizeof(cmd),"./ntpdate.sh %s",isBoot?"-b":"");
+	snprintf(cmd,sizeof(cmd),"./ntpdate.sh %s 2>/tmp/play3abn/ntpdate.log",isBoot?"-b":"");
 	if(system(cmd)<0) { syslog(LOG_ERR,"setDate failure: %s",cmd); }
 }
 

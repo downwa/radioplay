@@ -75,13 +75,18 @@ int Player::incVol(int inc) {
 void Player::initScheduled() {
 	syslog(LOG_INFO,"Scheduled::initScheduled");
 	if(schedRpy) { fclose(schedRpy); }
-	schedRpy=popen("./getsched","r");
-	if(!schedRpy) { syslog(LOG_ERR,"./getsched failed: %s",strerror(errno)); exit(1); }
+	schedRpy=popen("./getscheds.sh","r");
+	if(!schedRpy) { syslog(LOG_ERR,"./getscheds.sh failed: %s",strerror(errno)); exit(1); }
+	sleep(1); // Allow getfills to remove and recreate named pipe
+	if(schedReq) { fclose(schedReq); }
+	schedReq=fopen("/tmp/play3abn/scheds","wb");
+	if(!schedReq) { syslog(LOG_ERR,"fopen /tmp/play3abn/scheds failed: %s",strerror(errno)); exit(1); }	
 }
 
 strings Player::getScheduled() {
   syslog(LOG_INFO,"getScheduled");
-  if(!schedRpy) { initScheduled(); }
+  if(!schedReq || !schedRpy) { initScheduled(); }
+  fprintf(schedReq,"%ld\n",time(NULL)); fflush(schedReq);
   char buf[1024];
   char *rpy=fgets(buf, sizeof(buf), schedRpy);
   if(!rpy) {
@@ -108,8 +113,8 @@ strings Player::getScheduled() {
 }
 
 /** NOTE: Read a directory of links of the following form:
- * "2011-06-09 12:40:00 0066 IT'S A WONDERFUL DAY-Heritage Singers.ogg"
- * Each link specifies the date, time, length, and display name of a file to play.
+ * 2014-02-18 03:45:00 -> catcode=BIBLE;expectSecs=0267;flag=366;url=/tmp/play3abn/cache/Radio/Bible%20for%20Radio/01_Genesis/01_Genesis_003.ogg
+ * Each link specifies the date, time, category code, length, flag, and path of a file to play.
  * The target of the link is the actual file to play.
  */
 void Player::Execute(void *arg) {
@@ -137,12 +142,14 @@ MARK
 			syslog(LOG_ERR,"Player::Execute: Invalid format1 (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
 			remove(playlinkS); continue;
 		}
+	syslog(LOG_ERR,"DECODED: dispname=%s",dispname.c_str());
 		time_t now=time(NULL);
-		int elapsed=(now-playAt);
+		if(playAt==0) { playAt=now; }
+		int elapsed=(now-playAt); // Positive means we're partway through or past a file.  Negative means the file should not play yet
 		const char *pname=ent.one.c_str();
 		const char *ppath=url.c_str();
-		syslog(LOG_ERR,"1seclen=%d,pname=%s,ppath=%s",seclen,pname,ppath);		
-		fprintf(stderr,"1seclen=%d,pname=%s,ppath=%s\n",seclen,pname,ppath);		
+		syslog(LOG_ERR,"1seclen=%d,pname=%s,ppath=%s,elapsed=%d",seclen,pname,ppath,elapsed);		
+		fprintf(stderr,"1seclen=%d,pname=%s,ppath=%s,elapsed=%d\n",seclen,pname,ppath,elapsed);		
 /** PLAY IT only if found **/
 		struct stat statbuf;
 		if(stat(ppath, &statbuf)==-1) {
@@ -156,7 +163,7 @@ MARK
 
 		/** Copy to temp dir so filesystem can be unmounted while playing (for switching program sources) **/
 		char playtemp[1024];
-		snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%s %s",	Util::TEMPPATH,ent.one.c_str(),dispname.c_str());
+		snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%ld %s",	Util::TEMPPATH,playAt,dispname.c_str());
 		//strings ent2=util->itemEncode(playAt, flag, seclen, catcode, url);
 		//snprintf(playtemp,sizeof(playtemp),"%s/playtmp-%s %s",	Util::TEMPPATH,ent2.one.c_str(),ent2.two.c_str());
 MARK
