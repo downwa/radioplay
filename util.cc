@@ -433,7 +433,7 @@ int Util::itemDecode(strings infs, time_t& otime, int& flag, int& expectSecs, st
 	string dispPrefix="";
 	if(catcode != "") { dispPrefix=catcode+":"; }
 	dispname=dispPrefix+string(qq);
-	syslog(LOG_ERR,"itemDecode: DISPNAME: dispPrefix=%s,qq=%s,decodedUrl=%s,catcode=%s; dispname=%s",dispPrefix.c_str(),qq,decodedUrl.c_str(),catcode.c_str(),dispname.c_str());
+//	syslog(LOG_ERR,"itemDecode: DISPNAME: dispPrefix=%s,qq=%s,decodedUrl=%s,catcode=%s; dispname=%s",dispPrefix.c_str(),qq,decodedUrl.c_str(),catcode.c_str(),dispname.c_str());
 
 	return -ret;
 }		
