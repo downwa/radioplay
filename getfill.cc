@@ -293,6 +293,7 @@ MARK
 // 		  continue;
 // 		}
 	  printf("%s|%s\n",ent.one.c_str(),ent.two.c_str());
+	  sleep(1);
 	  fflush(stdout);
 	}
 MARK
