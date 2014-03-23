@@ -1,7 +1,7 @@
 CX=$(CXX) -O -fno-inline -g -Wall -Werror -m32 -L./libs/ -L./libs/32 -L./libs/64 -I./libs -I./include #-L/usr/lib/i386-linux-gnu/
 #CX=$(CXX) -O -fno-inline -g -Wall -Werror -L./libs/ -L./libs/32 -L./libs/64 -I./libs #-L/usr/lib/i386-linux-gnu/
 
-all: links play3abn mplay mplay.bin src-3abn lrucache mdown mscreen getarc schedfixed ogglen getfill getsched
+all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched # lrucache
 	@#sudo chown root.root play3abn src-3abn mdown mscreen getarc
 	@#sudo chmod +s play3abn src-3abn mdown mscreen getarc
 
@@ -37,13 +37,13 @@ schedfixed: schedfixed.cc schedfixed.hh libradioutil.so libdecoder.so thread.o s
 ogglen: ogglen.cc maindec.hh util.hh libradioutil.so libdecoder.so thread.o
 	$(CX) -o ogglen ogglen.cc thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread
 
-lrucache: lrucache.cc lrucache.hh libradioutil.so libdecoder.so thread.o lrucache.o
-	$(CX) -o lrucache lrucache.o thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread
+#lrucache: lrucache.cc lrucache.hh libradioutil.so libdecoder.so thread.o lrucache.o
+#	$(CX) -o lrucache lrucache.o thread.o -L. -ldecoder -lradioutil -lvorbisidec -lpthread
 
 MPLAYOBJS=mplay.o src-fill.o thread.o
-mplay.bin: $(MPLAYOBJS) libradioutil.so libdecoder.so /usr/bin/madplay
-	$(CX) -o mplay.bin $(MPLAYOBJS) -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lpulse -lpulse-simple -lasound
-	sudo chmod +s mplay.bin
+mplay: $(MPLAYOBJS) libradioutil.so libdecoder.so /usr/bin/madplay
+	$(CX) -o mplay $(MPLAYOBJS) -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lpulse -lpulse-simple -lasound
+	sudo chmod +x mplay
 
 getfill: getfill.o thread.o
 	$(CX) -o getfill getfill.o thread.o -L. -lradioutil -lpthread
@@ -54,10 +54,10 @@ getsched: getsched.o thread.o
 	sudo chmod +x getsched
 
 
-mplay: runplay.cc
-	$(CX) -o mplay runplay.cc
-	@#sudo chown root.root mplay
-	@#sudo chmod +x mplay
+#mplay: runplay.cc
+#	$(CX) -o mplay runplay.cc
+#	@#sudo chown root.root mplay
+#	@#sudo chmod +x mplay
 
 src-cnn.o: src-cnn.cc src-cnn.hh util.hh
 	$(CX) -c src-cnn.cc

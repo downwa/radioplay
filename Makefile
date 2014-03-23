@@ -29,4 +29,4 @@ installpi: bin
 	cd $(ARCH) && sudo cp -av lib*.so /usr/lib/
 
 run: bin install
-	sudo mount --bind /home/warren/RadioSD/UPDATE3ABN /media/RadioSD && cd $(ARCH) && ln -sf ../get*.sh . && ./play3abn && cd .. && sudo umount /media/RadioSD
+	sudo mount --bind $(HOME)/RadioSD/UPDATE3ABN /media/RadioSD && cd $(ARCH) && ln -sf ../get*.sh . && ./play3abn && cd .. && sudo umount /media/RadioSD
