@@ -8,8 +8,8 @@ void Decoder::init(Taudioq* audioq, Util *util) {
 	this->audioq=audioq; blockindex=0;
 }
 
-int Decoder::Decode(const char *filename, int seeksecs) {
-MARK
+int Decoder::xDecode(const char *filename, int seeksecs) {
+	MARK
 	// filename="/sdcard/download/OTR624~ON_THE_ROAD~Reigning_In_Righteousness~.ogg";
 	isMp3=false; isOgg=false; isWav=false; this->filename=filename; this->seeksecs=seeksecs;
 	int slen=strlen(filename);
@@ -20,7 +20,7 @@ MARK
 	}
 MARK
 //	syslog(LOG_ERR,"isMp3=%d",isMp3);
-	if(!isMp3) { isOgg=decogg->isValid(filename,nchannels, samplerate, trackSampleCount,seclen); 
+if(!isMp3) { isOgg=decogg->isValid(filename,nchannels, samplerate, trackSampleCount,seclen); 
 //	syslog(LOG_ERR,"isOgg=%d",isOgg);
 }
 MARK

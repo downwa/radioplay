@@ -38,6 +38,7 @@ public:
 	Decoder(Taudioq* audioq) { init(audioq,new Util("maindec")); }
 	Decoder(Taudioq* audioq, Util* util) { init(audioq,util); }
 	int Decode(const char *filename, int seeksecs);
+	int xDecode(const char *filename, int seeksecs);
 	int Enqueue(FILE *pcmin, int seeksecs); /** Reads raw pcm data and queues it for playback **/
 	float SecLen(const char *filename);
 	bool fixAmplitude(SAMPLE *samples,int numSamples, bool doBoost, SAMPLE &maxsamp, SAMPLE &amaxsamp);

@@ -142,7 +142,7 @@ MARK
 			syslog(LOG_ERR,"Player::Execute: Invalid format1 (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
 			remove(playlinkS); continue;
 		}
-	syslog(LOG_ERR,"DECODED: dispname=%s",dispname.c_str());
+		syslog(LOG_ERR,"DECODED: dispname=%s",dispname.c_str());
 		time_t now=time(NULL);
 		if(playAt==0) { playAt=now; }
 		int elapsed=(now-playAt); // Positive means we're partway through or past a file.  Negative means the file should not play yet
@@ -182,7 +182,8 @@ MARK
 		fprintf(stderr,"Decode(playtemp=%s,seekSecs=%d)\n",playtemp,seekSecs);
 		fflush(stderr);
 MARK
-		decoder->Decode(playtemp,seekSecs);
+decoder->xDecode(playtemp,seekSecs);
+//decoder->Decode(playtemp,seekSecs);
 MARK
 		fprintf(stderr,"Decode Finished(playtemp=%s,seekSecs=%d)\n",playtemp,seekSecs);
 		syslog(LOG_ERR,"Decode Finished(playtemp=%s,seekSecs=%d)",playtemp,seekSecs);
@@ -372,8 +373,10 @@ MARK
 					//fd_out=open_audio_device_ex("/dev/dsp", O_WRONLY, 1, curHz);
 					//if(fd_out==-1) { exit(1); }
                         		//break;
-					abort();
-                		}
+MARK	
+														abort();
+MARK	
+										}
                 		if (frames > 0 && frames < (long)(len/2)) syslog(LOG_ERR,"Short write (expected %li, wrote %li)\n", (long)len/2, frames);
 //			}
 #endif	
