@@ -14,6 +14,7 @@ MARK
 	util->removeDirFiles(Util::TEMPPATH);
 MARK
 	syslog(LOG_ERR,"tzofs=%ld,timezone=%ld,zone=%s",Util::tzofs,timezone,Util::zone);
+MARK
 	setIT("silentfill",0);
 MARK
 	audioq=new Taudioq(new Util("mplay#2"));
@@ -286,8 +287,7 @@ retry:
 			// Create a new portaudio playback stream
 			int error;
 			if (!(sa=pa_simple_new(NULL, "play3abn", PA_STREAM_PLAYBACK, NULL, "mplay", &ss, NULL, NULL, &error))) {
-				syslog(LOG_ERR,"pa_simple_new() failed: %s", pa_strerror(error));
-				abort();
+				syslog(LOG_ERR,"pa_simple_new() failed: %s", pa_strerror(error)); abort();
 			}
 			curChannels=channels;
 			curHz=sample_rate;
@@ -338,8 +338,11 @@ MARK
 MARK	
 	int olen=len;
 	int divisor=20;
+MARK	
 	if(fd_out==-2) { divisor=1; }
+MARK	
 	len=oneSecondLen/divisor;
+MARK	
 	for(int xa=0; xa<olen; xa+=len) {
 		if(fd_out!=-2) {
 	MARK	
@@ -368,13 +371,12 @@ MARK
                 		if (frames < 0) frames = snd_pcm_recover(handle, frames, 0);
                 		if (frames < 0) {
                         		fprintf(stderr,"WriteAudio: snd_pcm_writei failed: %s\n", snd_strerror(frames));
-                        		syslog(LOG_ERR,"WriteAudio: snd_pcm_writei failed: %s", snd_strerror(frames));
+                        		syslog(LOG_ERR,"WriteAudio: snd_pcm_writei failed: %s", snd_strerror(frames)); abort();
 					//snd_pcm_close(handle);
 					//fd_out=open_audio_device_ex("/dev/dsp", O_WRONLY, 1, curHz);
 					//if(fd_out==-1) { exit(1); }
                         		//break;
 MARK	
-														abort();
 MARK	
 										}
                 		if (frames > 0 && frames < (long)(len/2)) syslog(LOG_ERR,"Short write (expected %li, wrote %li)\n", (long)len/2, frames);
@@ -472,8 +474,7 @@ MARK
 	  /* Make sure that every single portaudio sample was played */
 //	int error;
 //  if(sa && pa_simple_drain(sa, &error) < 0) {
-//    syslog(LOG_ERR,"Playback: pa_simple_drain() failed: %s", pa_strerror(error));
-//    abort();
+//    syslog(LOG_ERR,"Playback: pa_simple_drain() failed: %s", pa_strerror(error)); abort();
 //  }
 //  if (sa) { pa_simple_free(sa); }
 #endif
@@ -482,12 +483,10 @@ snd_pcm_t *Player::openALSA(int channels, int sample_rate) {
         int err;
         //snd_pcm_t *handle;
         if ((err = snd_pcm_open(&handle, "default"/*device*/, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
-                syslog(LOG_ERR,"Playback open error#1: %s", snd_strerror(err));
-                abort();
+                syslog(LOG_ERR,"Playback open error#1: %s", snd_strerror(err)); abort();
         }
         if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, channels, sample_rate, 1/*allow resampling*/, 500000 /* 0.5sec latency */)) < 0) {
-                syslog(LOG_ERR,"Playback open error#2: %s", snd_strerror(err));
-                abort();
+                syslog(LOG_ERR,"Playback open error#2: %s", snd_strerror(err)); abort();
         }
         curChannels=channels; curHz=sample_rate;
 	return handle;

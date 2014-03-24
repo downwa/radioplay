@@ -15,7 +15,6 @@ bool DecodeOgg::isValid(const char *filename) {
 
 bool DecodeOgg::isValid(const char *filename, DWORD& nchannels, DWORD& samplerate, DWORD& trackSampleCount, float& seclen) {
 	seclen=SecLen(filename);
-	sleep(3600);// FIXME stack smashing detected
 	nchannels=this->nchannels;
 	samplerate=this->samplerate;
 	trackSampleCount=this->trackSampleCount;
@@ -25,23 +24,23 @@ bool DecodeOgg::isValid(const char *filename, DWORD& nchannels, DWORD& samplerat
 float DecodeOgg::SecLen(const char *filename) {
   FILE *oggin=fopen(filename,"rb");
   if(!oggin) { return -1; }
-#error Stack Smashing Detected when we run the below ov_open
+//#error Stack Smashing Detected when we run the below ov_open
+MARK
 	OggVorbis_File vf;
 	memset(&vf,0,sizeof(vf));
-	/*	
-	 *	if(ov_open(oggin, &vf, NULL, 0) < 0) { fclose(oggin); return -3; }
-	 *	
-	 *	trackSampleCount=(long)ov_pcm_total(&vf,-1); // Number of samples per track.
+MARK
+	if(ov_open(oggin, &vf, NULL, 0) < 0) { fclose(oggin); return -3; }
+MARK
+	trackSampleCount=(long)ov_pcm_total(&vf,-1); // Number of samples per track.
+MARK
 	vorbis_info *vi=ov_info(&vf,-1);
-//sleep(10);// FIXME stack smashing detected
+MARK
 	nchannels=vi->channels;
 	samplerate=vi->rate;
 	seclen=((float)trackSampleCount)/((float)vi->rate);
 MARK
-//	ov_clear(&vf); // Cleanup
-//	sleep(10);// FIXME stack smashing detected
-*/
-	MARK
+	ov_clear(&vf); // Cleanup
+MARK
 	return seclen;
 }
 
