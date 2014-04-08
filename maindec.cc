@@ -8,7 +8,7 @@ void Decoder::init(Taudioq* audioq, Util *util) {
 	this->audioq=audioq; blockindex=0;
 }
 
-int Decoder::xDecode(const char *filename, int seeksecs) {
+int Decoder::Decode(const char *filename, int seeksecs) {
 	MARK
 	// filename="/sdcard/download/OTR624~ON_THE_ROAD~Reigning_In_Righteousness~.ogg";
 	isMp3=false; isOgg=false; isWav=false; this->filename=filename; this->seeksecs=seeksecs;
@@ -20,7 +20,9 @@ MARK
 	}
 MARK
 //	syslog(LOG_ERR,"isMp3=%d",isMp3);
-if(!isMp3) { isOgg=decogg->isValid(filename,nchannels, samplerate, trackSampleCount,seclen); 
+if(!isMp3) { 
+  isOgg=decogg->isValid(filename,nchannels, samplerate, trackSampleCount,seclen); 
+printf("NOFAILGO\n");
 //	syslog(LOG_ERR,"isOgg=%d",isOgg);
 }
 MARK
@@ -85,7 +87,6 @@ int Decoder::Enqueue(FILE *pcmin, int seeksecs) {
 // #include "wavewriter.hh"
 // 	WaveWriter* wr=new WaveWriter(util);
 // 	wr->WriteHeader(filename,stdout, nchannels, samplerate, trackSampleCount);
-
 	int bufferLeft=0;
 	int elapsed=seeksecs;
 	bool isSilent=false;

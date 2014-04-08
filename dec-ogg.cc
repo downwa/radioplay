@@ -24,6 +24,7 @@ bool DecodeOgg::isValid(const char *filename, DWORD& nchannels, DWORD& samplerat
 float DecodeOgg::SecLen(const char *filename) {
   FILE *oggin=fopen(filename,"rb");
   if(!oggin) { return -1; }
+  return 3600;
 //#error Stack Smashing Detected when we run the below ov_open
 MARK
 	OggVorbis_File vf;
