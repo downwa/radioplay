@@ -1,7 +1,7 @@
 CX=$(CXX) -O -fno-inline -g -Wall -Werror -m32 -L./libs/ -L./libs/32 -L./libs/64 -I./libs -I./include #-L/usr/lib/i386-linux-gnu/
 #CX=$(CXX) -O -fno-inline -g -Wall -Werror -L./libs/ -L./libs/32 -L./libs/64 -I./libs #-L/usr/lib/i386-linux-gnu/
 
-all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched # lrucache
+all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched infinitepipe # lrucache
 	@#sudo chown root.root play3abn src-3abn mdown mscreen getarc
 	@#sudo chmod +s play3abn src-3abn mdown mscreen getarc
 
@@ -115,6 +115,9 @@ taudioq.o: taudioq.cc taudioq.hh tqnode.hh
 
 mdown: mdown.cc mdown.hh libradioutil.so thread.o src-cnn.o
 	$(CX) -o mdown src-cnn.o thread.o -L. -lradioutil -lpthread -lcurl mdown.cc
+
+infinitepipe: infinitepipe.cc
+	$(CX) -o infinitepipe infinitepipe.cc
 
 getarc: getarc.cc getarc.hh
 	$(CX) -o getarc getarc.cc -lcurl
