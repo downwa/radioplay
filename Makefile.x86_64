@@ -1,7 +1,7 @@
 CX=$(CXX) -O -fno-inline -g -Wall -Werror -m32 -L./libs/ -L./libs/32 -L./libs/64 -I./libs -I./include #-L/usr/lib/i386-linux-gnu/
 #CX=$(CXX) -O -fno-inline -g -Wall -Werror -L./libs/ -L./libs/32 -L./libs/64 -I./libs #-L/usr/lib/i386-linux-gnu/
 
-all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched # lrucache
+all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched infinitepipe # lrucache
 
 run: all
 	cd x86_64 && sudo ./play3abn && cd ..

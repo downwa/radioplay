@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 			do {
 				olen=fwrite(&buf[ofs], rem, 1, fpout); fflush(fpout);
 				if(olen<rem || ferror(fpout)) {
-					fprintf(stderr,"Short write: %d < %d\n",olen,rem);
+					fprintf(stderr,"Short write: %ld < %ld\n",olen,rem);
 					clearerr(fpout);
 				}
 				rem-=olen; ofs+=olen;
