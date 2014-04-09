@@ -56,11 +56,22 @@ getFiller() {
         }
 		[ $maxLen -lt 10 ] && fillType="SILENT"
 	fi
-	echo $fillType
-	local var="fill$fillType"
-  eval ret=$(echo \"\$$var\")
-	echo "$ret" | head -n 1
-	local rest=$(echo "$ret" | tail -n +2)
+#	echo $fillType
+	maxLen=$(printf "%04d" "$maxLen")
+	for t in 1 2; do
+		local var="fill$fillType"
+		eval ret=$(echo \"\$$var\")
+		fill=$(echo "$ret" | awk -v maxLen=$maxLen '{n=substr($0,1,4); if(n=="    ") { n="0000"; } if(n<maxLen) { print n" "substr($0,6); } }' | head -n 1)
+		[ "$fill" != "" ] && break
+		loadFill "$fillType"
+	done
+	if [ "$fill" = "" ]; then
+		echo "BAD SCHEDULE FOR $fillType" 1>&2
+		return
+	fi
+	echo "$fill"
+	#local rest=$(echo "$ret" | tail -n +2)
+	local rest=$(echo "$ret" | grep -v "^$fill")
   eval fill$fillType=\$rest
 }
 
@@ -80,6 +91,7 @@ find "$Q" -type l | sort | while read name; do
 	end=$((at+len))
 	if [ "$now" -lt "$at" ]; then
 		flen=$((at-now))
+		fill=$(getFiller "$flen")
 		echo "Need filler $flen long before $name"
 		sleep $flen 
 	fi
