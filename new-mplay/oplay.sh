@@ -3,15 +3,65 @@
 Q="/tmp/play3abn/tmp/playq"
 P="/tmp/play3abn/play.fifo"
 
+prevFill=1
+
 # while [ true ]; do ogg123 -d raw -f - fill.ogg; done | aplay -f S16_LE -c1 -r16000
 # For filler: ProgramList2-FILLER_ADS.txt     ProgramList2-FILLER_MUSIC.txt   ProgramList2-FILLER_OTHER.txt   ProgramList2-FILLER_SHORT.txt   ProgramList2-FILLER_SILENT.txt
 # sort -R /sdcard/schedules/programs/ProgramList2-FILLER_MUSIC.txt
 
 decode() {
-	file=$1
-	seek=$2
+	local file=$1
+	local seek=$2
 	date +"%D %T: DECODE seek=$seek; file=$file"
 	ogg123 --skip "$seek" -d raw -f "$P" "$file"
+}
+
+loadFill() {
+	local fillType=$1
+	[ "$fillType" = "" ] && echo "Missing fillType" 1>&2 && return
+	eval fill$fillType=\$\(grep -v \"^PATT\" \"/RadioSD/schedules/programs/ProgramList2-FILLER_$fillType.txt\" \| sort -R\)
+}
+
+loadFills() {
+	local ft
+	for ft in MUSIC OTHERLONG OTHER ADS SHORT SILENT; do
+		loadFill $ft
+	done
+}
+
+getFill() {
+	local ft="ADS";
+	var="fill$ft"
+  eval ret=$(echo \"\$$var\")
+}
+
+# DECIDE WHICH SET OF FILLER TO USE, and randomly get something that matches given length (or less)
+getFiller() {
+	local maxLen=$1
+	[ "$maxLen" = "" ] && echo "Missing maxLen" 1>&2 && return
+  # >=370     use MUSIC
+  # 93-369    use OTHERLONG
+  # 80-92     use OTHER
+  # 61-79     use ADS
+  # 10-60     alternate between SHORT and ADS
+  # <=10      use SILENT
+	local fillType="MUSIC" # Default
+  if [ $maxLen -lt 370 ]; then
+		[ $maxLen -ge 93 -a $maxLen -le 369 ] && fillType="OTHERLONG"
+    [ $maxLen -ge 80 -a $maxLen -le 92  ] && fillType="OTHER"
+    [ $maxLen -ge 61 -a $maxLen -le 79  ] && fillType="ADS"
+    [ $maxLen -ge 10 -a $maxLen -le 60  ] && {
+                prevFill=$((1-prevFill)); # Toggle fill type for this length
+                if [ $prevFill -eq 1 ]; then fillType="SHORT"; else fillType="ADS"; fi
+        }
+		[ $maxLen -lt 10 ] && fillType="SILENT"
+	fi
+	echo $fillType
+	local var="fill$fillType"
+  eval ret=$(echo \"\$$var\")
+	echo "$ret" | head -n 1
+	local rest=$(echo "$ret" | tail -n +2)
+  eval fill$fillType=\$rest
 }
 
 # Read links of format e.g.  "/tmp/play3abn/tmp/playq/2014-04-03 18:00:00 -1"

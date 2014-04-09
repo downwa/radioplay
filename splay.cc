@@ -119,6 +119,8 @@ strings Player::getScheduled() {
  * The target of the link is the actual file to play.
  */
 void Player::Execute(void *arg) {
+    printf("Execute\n");
+    sleep(9999);
 	int count=0;
         char playqdir[1024];
         snprintf(playqdir,sizeof(playqdir),"%s/playq",Util::TEMPPATH);
@@ -184,6 +186,7 @@ MARK
 		fflush(stderr);
 MARK
 decoder->Decode(playtemp,seekSecs);
+//decoder->Decode(playtemp,seekSecs);
 MARK
 		fprintf(stderr,"Decode Finished(playtemp=%s,seekSecs=%d)\n",playtemp,seekSecs);
 		syslog(LOG_ERR,"Decode Finished(playtemp=%s,seekSecs=%d)",playtemp,seekSecs);
@@ -312,6 +315,8 @@ syslog(LOG_ERR,"Calling open_audio_device from openTestAudio");
 	setST("playfile","");
 	setIT("playsec",0);
 	setIT("curplaylen",0);
+    printf("Playback:openTestAudio: fd_out=%d\n",fd_out);
+	
 	for(int xa=0; xa<2; xa++) { write_sinewave(SAMPLE_RATE,fileindex); }
 	testVol=0;
 	for(int xa=0; xa<6; xa++) { write_sinewave(SAMPLE_RATE,fileindex); }
@@ -330,6 +335,7 @@ syslog(LOG_ERR,"Calling open_audio_device from openTestAudio");
 }
 
 void Player::WriteAudio(char *curaudio, int len) {
+  printf("WriteAudio len=%d\n",len);
 	if(len==0) { return; } // Nothing to write!
 	int ret=len;
 MARK	
@@ -366,7 +372,9 @@ MARK
 			}
 			else {
 */
+printf("snd_pcm_writei\n");
         			frames = snd_pcm_writei(handle, &curaudio[xa], len/2);
+printf("snd_pcm_writei: frames=%ld\n",frames);
                 		if (frames < 0) frames = snd_pcm_recover(handle, frames, 0);
                 		if (frames < 0) {
                         		fprintf(stderr,"WriteAudio: snd_pcm_writei failed: %s\n", snd_strerror(frames));
@@ -390,6 +398,7 @@ MARK
 }
 
 void Player::Playback() {
+    printf("Playback\n");
 	//syslog(LOG_ERR,"Player::Playback");
 	if(openTestAudio(NULL)==-1) { exit(1); }
 	Start(NULL);
@@ -481,13 +490,16 @@ MARK
 snd_pcm_t *Player::openALSA(int channels, int sample_rate) {
         int err;
         //snd_pcm_t *handle;
+printf("openALSA#1\n");
         if ((err = snd_pcm_open(&handle, "default"/*device*/, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
                 syslog(LOG_ERR,"Playback open error#1: %s", snd_strerror(err)); abort();
         }
+printf("openALSA#2\n");
         if ((err = snd_pcm_set_params(handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, channels, sample_rate, 1/*allow resampling*/, 500000 /* 0.5sec latency */)) < 0) {
                 syslog(LOG_ERR,"Playback open error#2: %s", snd_strerror(err)); abort();
         }
         curChannels=channels; curHz=sample_rate;
+printf("openALSA#3:channels=%d,hz=%d\n",channels,curHz);
 	return handle;
 }
 
