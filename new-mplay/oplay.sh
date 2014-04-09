@@ -75,34 +75,38 @@ getFiller() {
   eval fill$fillType=\$rest
 }
 
-# Read links of format e.g.  "/tmp/play3abn/tmp/playq/2014-04-03 18:00:00 -1"
-find "$Q" -type l | sort | while read name; do
-	d=$(echo "$name" | sed -e 's@.*playq/@@g' | awk '{print $1" "$2}')
-	at=$(date -d "$d" +%s)
-	now=$(date +%s)
-	# Convert to format e.g.: TESTIMONY4 3480 /tmp/play3abn/cache/download/TDYHR2~2011-05-06~3ABN_TODAY-LIVE_SIMULCAST_WITH_3ABN_TV~.ogg
-	link=$(stat -c "%N" "$name" | sed -e 's/.*`//g' -e "s/'.*//g")
-	cat=$(echo "$link" | cut -d ' ' -f 1)
-	len=$(echo "$link" | cut -d ' ' -f 2 | bc)
-	tgt=$(echo "$link" | cut -d ' ' -f 3-)
+main() {
+				# Read links of format e.g.  "/tmp/play3abn/tmp/playq/2014-04-03 18:00:00 -1"
+				find "$Q" -type l | sort | while read name; do
+					d=$(echo "$name" | sed -e 's@.*playq/@@g' | awk '{print $1" "$2}')
+					at=$(date -d "$d" +%s)
+					now=$(date +%s)
+					# Convert to format e.g.: TESTIMONY4 3480 /tmp/play3abn/cache/download/TDYHR2~2011-05-06~3ABN_TODAY-LIVE_SIMULCAST_WITH_3ABN_TV~.ogg
+					link=$(stat -c "%N" "$name" | sed -e 's/.*`//g' -e "s/'.*//g")
+					cat=$(echo "$link" | cut -d ' ' -f 1)
+					len=$(echo "$link" | cut -d ' ' -f 2 | bc)
+					tgt=$(echo "$link" | cut -d ' ' -f 3-)
 
-	echo "name=$name,cat=$cat,len=$len,tgt=$tgt"
-	
-	end=$((at+len))
-	if [ "$now" -lt "$at" ]; then
-		flen=$((at-now))
-		fill=$(getFiller "$flen")
-		echo "Need filler $flen long before $name"
-		sleep $flen 
-	fi
-	now=$(date +%s)
-	if [ "$now" -ge "$at" ]; then # This file should play or have been played
-		if [ "$now" -lt "$end" ]; then # Play it
-			seek=$((now-at))
-			decode "$tgt" "$seek"
-		else
-			echo "Too late for $name"
-			rm "$name"
-		fi
-	fi
-done
+					echo "name=$name,cat=$cat,len=$len,tgt=$tgt"
+					
+					end=$((at+len))
+					if [ "$now" -lt "$at" ]; then
+						flen=$((at-now))
+						fill=$(getFiller "$flen")
+						echo "Need filler $flen long before $name"
+						sleep $flen 
+					fi
+					now=$(date +%s)
+					if [ "$now" -ge "$at" ]; then # This file should play or have been played
+						if [ "$now" -lt "$end" ]; then # Play it
+							seek=$((now-at))
+							decode "$tgt" "$seek"
+						else
+							echo "Too late for $name"
+							rm "$name"
+						fi
+					fi
+				done
+}
+
+main
