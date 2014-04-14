@@ -1,1 +1,1 @@
-mplay,mdown,schedfixed,mscreen
+playloop.sh,mdown,schedfixed,mscreen
