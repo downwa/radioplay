@@ -14,7 +14,7 @@ checkout:
 checkin: # e.g. downwa
 	#git push -v origin master
 	#git push -v https://downwa@github.com/downwa/radioplay master
-	git add -v *.c *.cc *.h *.hh *.sh *.txt LICENSE README.md Makefile* vars
+	git add -v *.c *.cc *.h *.hh *.sh *.txt LICENSE README.md Makefile* vars ogglen
 	git commit -v
 	git push
 
@@ -29,7 +29,7 @@ installpi: bin
 	cd $(ARCH) && sudo cp -av lib*.so /usr/lib/
 
 run: bin install
-	sudo mount --bind $(HOME)/RadioSD/ /media/RadioSD && cd $(ARCH) && ln -sf ../get*.sh . && ./play3abn && cd .. && sudo umount /media/RadioSD
+	sudo mount --bind $(HOME)/RadioSD/UPDATE3ABN /media/RadioSD && cd $(ARCH) && ln -sf ../get*.sh . && ./play3abn && cd .. && sudo umount /media/RadioSD
 
 splay: splay.cc
 	c++ -O -fno-inline -g -Wall -Werror -m32 -L./libs/ -L./libs/32 -L./libs/64 -I./libs -I./include -o splay splay.cc src-fill.cc thread.cc -L. -ldecoder -lradioutil -lvorbisidec -lpthread -lpulse -lpulse-simple -lasound -lvorbisfile

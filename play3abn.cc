@@ -425,7 +425,7 @@ MARK
 
 pid_t Play3ABN::pidof(const char *pname) {
 	vector<pid_t> pids=pidsof(pname,1);
-	if(pids.size()==1) { return pids[0]; }
+	if(pids.size()>=1) { return pids[0]; }
 	return -1;
 }
 
@@ -450,7 +450,7 @@ MARK
 		if(!fp) { continue; }
 		cmdline[0]=0;
 		if(fread(cmdline, 1, sizeof(cmdline), fp)<1) { fclose(fp); continue; }
-		char *pp=strrchr(cmdline,'/');
+		const char *pp=strcmp(cmdline,"/bin/sh")!=0?strrchr(cmdline,'/'):strrchr(&cmdline[strlen(cmdline)+1],'/');
 		if(!pp) { pp=cmdline; }
 		else { pp++; }
 		const char *qq=strrchr(pname,'/');

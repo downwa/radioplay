@@ -12,7 +12,8 @@ STRIP=../../dev-arm/gcc/usr/local/arm/4.3.2/bin/arm-none-linux-gnueabi-strip
 all: links play3abn mplay src-3abn mdown mscreen getarc infinitepipe
 
 links:
-	@ln -sf ../*.cc ../*.hh ../stacktrace.h ../logerr.h ../FillerPlaylist.txt ../vars .
+	@stat ../stacktrace.h >/dev/null || { echo "ERROR: Run this from architecture subdirectory" && false; }
+	@ln -sf ../*.cc ../*.hh ../stacktrace.h ../logerr.h ../FillerPlaylist.txt ../vars ../playloop.sh .
 	@ln -sf ../../libs/arm libs
 
 mscreen: out.o outscreen.o outscreen_input.o outscreen_saver.o thread.o mscreen.cc $(EZFB)

@@ -6,7 +6,8 @@ all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfil
 	@#sudo chmod +s play3abn src-3abn mdown mscreen getarc
 
 links:
-	@ln -sf ../*.cc ../*.hh ../stacktrace.h ../logerr.h ../libs ../FillerPlaylist*.txt ../CodeCategories.txt ../vars .
+	@stat ../stacktrace.h >/dev/null || { echo "ERROR: Run this from architecture subdirectory" && false; }
+	@ln -sf ../*.cc ../*.hh ../stacktrace.h ../logerr.h ../libs ../FillerPlaylist*.txt ../CodeCategories.txt ../vars ../playloop.sh .
 
 mscreen: out.o outscreen.o outscreen_input.o outscreen_saver.o thread.o mscreen.cc
 	$(CX) -o mscreen out.o outscreen.o outscreen_input.o outscreen_saver.o thread.o -L. -lradioutil -lcurses -lpthread mscreen.cc
