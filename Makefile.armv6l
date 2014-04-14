@@ -1,7 +1,7 @@
 CX=$(CXX) -O -fno-inline -g -Wall -Werror -DRPI 
 #CX=$(CXX) -O -fno-inline -g -Wall -Werror -L./libs/ -L./libs/32 -L./libs/64 -I./libs #-L/usr/lib/i386-linux-gnu/
 
-all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched #lrucache
+all: links play3abn mplay src-3abn mdown mscreen getarc schedfixed ogglen getfill getsched infinitepipe #lrucache
 	@#sudo chown root.root play3abn src-3abn mdown mscreen getarc
 	@#sudo chmod +s play3abn src-3abn mdown mscreen getarc
 

@@ -9,7 +9,7 @@ CX=../../dev-arm/gcc/usr/local/arm/4.3.2/bin/arm-none-linux-gnueabi-$(CXX) -mcpu
                 
 STRIP=../../dev-arm/gcc/usr/local/arm/4.3.2/bin/arm-none-linux-gnueabi-strip
 
-all: links play3abn mplay src-3abn mdown mscreen getarc
+all: links play3abn mplay src-3abn mdown mscreen getarc infinitepipe
 
 links:
 	@ln -sf ../*.cc ../*.hh ../stacktrace.h ../logerr.h ../FillerPlaylist.txt ../vars .
