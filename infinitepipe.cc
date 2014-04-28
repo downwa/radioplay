@@ -3,7 +3,7 @@
 #include <string.h>
 #include <errno.h>
 
-#define PROGRESS 	"/tmp/play3abn/vars/playsec.txt"
+#define PROGRESS 	"/tmp/play3abn/vars/playedsec.txt"
 #define BYTESPERSEC	(16000*2)
 
 int main(int argc, char **argv) {
