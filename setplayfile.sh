@@ -1,0 +1,1 @@
+playfile=$(find /proc/$(pidof ogg123)/fd/ -printf "%l\n" | egrep -v "^/tmp/play3abn/tmp/logs/|^/tmp/play3abn/play|^/proc/|^/dev/null|^$"); echo "/tmp/play3abn/tmp/playtmp- $playfile" >/tmp/play3abn/vars/playfile.txt # "/tmp/play3abn/tmp/playtmp-2011-11-21 11:10:28 0108 106-HEAVEN'S REALLY GONNA SHINE-Chuck Wagon Gang.ogg"

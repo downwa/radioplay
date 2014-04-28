@@ -58,8 +58,8 @@ int Decoder::Enqueue(FILE *pcmin, int seeksecs) {
 	bool isFiller=false;
 	const char *pp=strstr(filename,"/playtmp-");
 	if(pp) { /** e.g. /playtmp-2011-11-21 11:10:28 0108 106-HEAVEN **/
-					 /**                1111111111 222222222 3333 **/
-					 /**      0123456789 123456789 123456789 1234 **/
+		 /**                1111111111 222222222 3333 **/
+		 /**      0123456789 123456789 123456789 1234 **/
 		pp=&pp[34];
 		isFiller=(isdigit(pp[0]) && isdigit(pp[1]) && isdigit(pp[2]) && pp[3]=='-');
 	}

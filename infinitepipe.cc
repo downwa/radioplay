@@ -3,6 +3,9 @@
 #include <string.h>
 #include <errno.h>
 
+#define PROGRESS 	"/tmp/play3abn/vars/playsec.txt"
+#define BYTESPERSEC	(16000*2)
+
 int main(int argc, char **argv) {
 	char infile[1024];
 	FILE *fpout=stdout;
@@ -21,12 +24,13 @@ int main(int argc, char **argv) {
 		if(!fpout) { fprintf(stderr,"Error opening output '%s': %s\n",argv[2],strerror(errno)); exit(1); }
 	}
 	while(true) {
+		size_t totalBytes=0;
 		FILE *fpin=fopen(infile,"rb");
 		if(!fpin) { fprintf(stderr,"Error opening %s: %s\n",infile,strerror(errno)); exit(-2); }
 		size_t olen;
 //int start=1;
 		while(!feof(fpin) && !ferror(fpin)) {
-			unsigned char buf[4000];
+			unsigned char buf[8000];
 			size_t ilen=fread(buf, 1, sizeof(buf), fpin);
 //if(start) { fprintf(stderr,"read %ld: %02x %02x %02x %02x\n",(long int)ilen,buf[0],buf[1],buf[2],buf[3]); }
 			if(ilen<=0) { break; }
@@ -41,6 +45,13 @@ int main(int argc, char **argv) {
 				rem-=olen; ofs+=olen;
 			} while(rem>0);
 			fflush(fpout);
+			totalBytes+=ilen;
+			FILE* progressFp=fopen(PROGRESS ".tmp","wb");
+			if(progressFp) {
+				fprintf(progressFp,"%ld",(long int)(totalBytes/BYTESPERSEC));
+				fclose(progressFp);
+				rename(PROGRESS ".tmp", PROGRESS);
+			}
 		}
 		fclose(fpin);
 	}	

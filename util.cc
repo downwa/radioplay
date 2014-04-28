@@ -1026,13 +1026,15 @@ void Util::findTarget(char *path, int pathLen, const char *name) {
 	const char sources[3][10]={{"download"},{"filler"},{"Radio"}};
 	for(unsigned int sx=0; !found && sx<(sizeof(sources)/sizeof(sources[0])); sx++) {
                 char d[3]={0};
-                if(sx==0) { d[0]=tolower(name[0]); d[1]='/'; d[2]=0; }
+		// NOTE: For download source, add leading directory if not already there
+                if(sx==0 && name[1]!='/') { d[0]=tolower(name[0]); d[1]='/'; d[2]=0; }
 		for(int ix=0; ix<4; ix++) {
 			char sIx[2]={0};
 			if(ix>0) { sIx[0]=('0'+ix); sIx[1]=0; }
-                        snprintf(path,pathLen,"%s/%s%s/%s%s",cachedir.c_str(),sources[sx],sIx,d,name);
 			struct stat statbuf;
+                        snprintf(path,pathLen,"%s/%s%s/%s%s",cachedir.c_str(),sources[sx],sIx,d,name);
 			if(stat(path, &statbuf)!=-1) { found=true; break; }
+//fprintf(stderr,"Util::findTarget: NOT FOUND: %s\n",path);
 		}
 	}
 	if(!found) { path[0]=0; }

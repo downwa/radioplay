@@ -26,6 +26,7 @@ install: bin
 	cd $(ARCH) && sudo cp -av lib*.so /lib/i386-linux-gnu/
 
 installpi: bin
+	which bc || apt-get install bc
 	cd $(ARCH) && sudo cp -av lib*.so /usr/lib/
 
 run: bin install

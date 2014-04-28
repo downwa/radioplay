@@ -16,6 +16,14 @@ prevFill=1
 decode() {
 	local file=$1
 	local seek=$2
+	local len=$3
+	local msg=$4
+
+	# "/tmp/play3abn/tmp/playtmp-2011-11-21 11:10:28 0108 106-HEAVEN'S REALLY GONNA SHINE-Chuck Wagon Gang.ogg"
+	base=$(basename "$file")
+	printf "/tmp/play3abn/tmp/playtmp- %s%s" "$msg" "$base" >/tmp/play3abn/vars/playfile.txt
+	printf "%d" "$len" >/tmp/play3abn/vars/curplaylen.txt
+
 	date +"%D %T: DECODE seek=$seek; file=$file"
 	ogg123 --skip "$seek" -d raw -f "$P" "$file" </dev/null >/tmp/play3abn/tmp/logs/ogg123.log 2>&1
 }
@@ -25,6 +33,8 @@ loadFill() {
 	[ "$fillType" = "" ] && echo "Missing fillType" 1>&2 && return
 	files=$(find /tmp/play3abn/cache/schedules*/programs -name "ProgramList2-FILLER_$fillType.txt" -exec grep -v "^PATT" {} \; | sort -R)
 #echo "fillType $fillType files=$files" 1>&2
+	local fillCount=$(echo "$files" | wc -l)
+	echo "fillType $fillType count=$fillCount" 1>&2
 	eval fill$fillType=\$files
 }
 
@@ -70,18 +80,28 @@ getFiller() { # OUTPUT: len,tgt
 		for t in 1 2; do
 			local var="fill$fillType"
 			eval ret=$(echo \"\$$var\")
-			fill=$(echo "$ret" | awk -v maxLen=$maxLen '{n=substr($0,1,4); if(n=="    ") { n="0000"; } if(n<maxLen) { print n" "substr($0,6); } }' | head -n 1)
+
+	local fillCount=$(echo "$ret" | wc -l)
+	echo "  getFiller:1:fillType $fillType count=$fillCount" 1>&2
+
+			[ "$maxLen" -lt "1" ] && maxLen=1
+			maxLen=$(printf "%04d" "$maxLen")
+			fill=$(echo "$ret" | awk -v maxLen=$maxLen '{n=substr($0,1,4); if(n=="    ") { n="0000"; } if(n<=maxLen) { print n" "substr($0,6); } }' | head -n 1)
 			[ "$fill" != "" ] && break
 			loadFill "$fillType" # If nothing found, reload and retry
 		done
+		echo "  getFiller: fillType=$fillType,fill=$fill,maxLen=$maxLen" 1>&2
 		if [ "$fill" = "" ]; then
 			echo "BAD SCHEDULE FOR $fillType" 1>&2
 			return
 		fi
-		echo "getFiller: fillType=$fillType,fill=$fill,maxLen=$maxLen" 1>&2
 		local rest=$(echo "$ret" | grep -v "^$fill")
 		eval fill$fillType=\$rest
 		findFill "$fill"
+
+	fillCount=$(echo "$rest" | wc -l)
+	echo "  getFiller:2:fillType $fillType count=$fillCount" 1>&2
+
 		[ "$tgt" != "" ] && return
 	done
 	echo "getFiller: Unable to locate filler in 5 tries." 1>&2
@@ -89,7 +109,7 @@ getFiller() { # OUTPUT: len,tgt
 
 findFill() { # OUTPUT: len,tgt
 	local fill=$1
-	echo "findFill $fill" 1>&2
+	echo "    findFill $fill" 1>&2
 	len=${fill:0:4}
 	len=$(echo "$len" | bc)
 	fill=${fill:5}
@@ -101,6 +121,7 @@ decodeLoop() {
 	while [ ! -f "$STOP" ]; do
 		# Read links of format e.g.  "/tmp/play3abn/tmp/playq/2014-04-03 18:00:00 -1"
 		before=$(date +%s)
+# FIXME: below find needs to be in same process as read so filler assignments will be permanent
 		find "$Q" -type l | sort | while read name; do
 			[ -f "$STOP" ] && break
 			d=$(echo "$name" | sed -e 's@.*playq/@@g' | awk '{print $1" "$2}')
@@ -120,18 +141,22 @@ decodeLoop() {
 			else
 				len=$(echo "$len" | bc)
 			fi
-			echo "name=$name,cat=$cat,len=$len,tgt=$tgt"
+			echo "decodeLoop: name=$name,cat=$cat,len=$len,tgt=$tgt"
 			
 			nearend=$((at+len-5))
-			if [ "$now" -lt "$at" ]; then
+			if [ "$now" -lt "$at" -o "1" = "1" ]; then
 				flen=$((at-now))
 				getFiller "$flen" # Output len,tgt
-				if [ "$tgt" != "" ]; then
-					echo "decode fill $tgt" 1>&2
-					decode "$tgt" 0
+				if [ "$tgt" != "" -a "1" = "2" ]; then
+					echo "  decode fill $tgt" 1>&2
+					decode "$tgt" 0 "$len" "FILLER-"
+					#continue # Continue stays in same process so filler progresses, break does not
 					break # Retry playing early file or get more filler
 				else
-					sleep $flen
+					#sleep $flen
+					sleep 10
+					#continue
+					break
 				fi
 			fi
 			now=$(date +%s)
@@ -139,7 +164,7 @@ decodeLoop() {
 				if [ "$now" -lt "$nearend" ]; then # Play it
 					seek=$((now-at))
 					echo "decode prog $seek $tgt" 1>&2
-					decode "$tgt" "$seek"
+					decode "$tgt" "$seek" "$len" ""
 					rm "$name"
 					break # Don't simply play next link; break to top level and see what links are not too late to play
 				else
