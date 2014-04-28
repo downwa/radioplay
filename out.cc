@@ -570,12 +570,13 @@ int Out::UpdatePlaying(int row) {
 	char out[1024];
 	char playfile[256];
 	getST(playfile);
+	// PREVIOUSLY WAS e.g:
 	//                          "2011-06-09 12:40:00 1 0066 IT'S A WONDERFUL DAY-Heritage Singers.ogg"
 	// /tmp/play3abn/tmp/playtmp-2012-03-06 09:00:01 0 3479 One_Second_Time_Fill~Simulcast_Of_3abn_Tv's_Today_L~3ABN_TODAY_RADIO_BREAK_2~.ogg
+	// NOW e.g.
+	// /tmp/play3abn/tmp/playtmp-1398709187 FILLER-I SEE GOD-King's Hearlds & Del Delker.ogg
 
 	time_t playAt=0;
-//	int flag,seclen=0;
-//	string catcode="", url="";
 	string dispname="(No file playing)";
 	if(playfile[0]) {
 		char *pp=strchr(playfile,'-');
@@ -585,32 +586,9 @@ int Out::UpdatePlaying(int row) {
 		*qq=0;
 		playAt=atol(&pp[1]);
 		dispname=string(&qq[1]);
-// 		strings ent=strings(string(&pp[1]),&qq[1]);
-// 		int result=util->itemDecode(ent, playAt, flag, seclen, catcode, dispname, url);
-// 		if(result<0) {
-// 			syslog(LOG_ERR,"Out::UpdatePlaying: Invalid format2 (result=%d): %s => %s",result,ent.one.c_str(),ent.two.c_str());
-// 			remove(playfile);
-// 			return row;
-// 		}
 	}
 	prevPlayAt=playAt;
 	const char *playing=dispname.c_str();
-	
-/*	
-	const char *pp=strchr(playfile,' '); // Skip to play time in path
-	int hh=0,mm=0,ss=0;
-	if(pp) {
-		pp=&pp[1];   // hh:mm:ss
-		hh=atoi(pp); // 01 34 67
-		mm=atoi(&pp[3]);
-		ss=atoi(&pp[6]);
-		pp=strchr(pp,' '); // Locate flag (age of schedule)
-	}
-	if(pp) { pp=strchr(&pp[1],' '); } // Locate length of item (in seconds)
-	if(pp) { pp=strchr(&pp[1],' '); } // Locate displayable filename
-	const char *playing=pp?&pp[1]:playfile;
-	snprintf(out,sizeof(out),"%02d%02d%02d %s",hh,mm,ss,playing);
-*/	
 	struct tm tms;
   struct tm* tptr=localtime_r(&playAt,&tms);
 	if(!playfile[0]) { tptr->tm_hour=tptr->tm_min=tptr->tm_sec=0; } // Display default time if no file playing
