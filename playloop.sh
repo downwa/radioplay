@@ -19,7 +19,8 @@ decode() {
 	local len=$3
 	local msg=$4
 
-	# "/tmp/play3abn/tmp/playtmp-2011-11-21 11:10:28 0108 106-HEAVEN'S REALLY GONNA SHINE-Chuck Wagon Gang.ogg"
+	# WAS e.g. "/tmp/play3abn/tmp/playtmp-2011-11-21 11:10:28 0108 106-HEAVEN'S REALLY GONNA SHINE-Chuck Wagon Gang.ogg"
+	# NOW e.g. "/tmp/play3abn/tmp/playtmp-1398709187 FILLER-I SEE GOD-King's Hearlds & Del Delker.ogg"
 	base=$(basename "$file")
 	local now=$(date +%s)
 	printf "/tmp/play3abn/tmp/playtmp-%s %s%s" "$now" "$msg" "$base" >/tmp/play3abn/vars/playfile.txt
