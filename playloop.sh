@@ -30,13 +30,25 @@ decode() {
 
 	date +"%D %T: DECODE seek=$seek; file=$file"
 	local endtime=$((now+len-seek))
+	local oldogg=$(ps waxf | grep ogg123 | grep -v grep | awk '{print $1}')
+	local count=$(echo "$oldogg" | wc -l)
+	[ "$count" -gt "1" ] && killall -9 ogg123 # Avoid overloading with extra processes (shouldn't happen but may anyway)
 	ogg123 --skip "$seek" -d raw -f "$P" "$file" </dev/null >/tmp/play3abn/tmp/logs/ogg123.log 2>&1 &
 
 	local start=$now
+	local oplsec=0
 	while [ $now -lt $endtime ]; do
 		local playsec=$((now-start+seek))
-		echo "$playsec" >/tmp/play3abn/vars/playsec.txt
+		[ "$playsec" -gt 5 -a "$oldogg" != "" ] && { kill -9 $oldogg; oldogg=""; }
+		plsec=$(cat /tmp/play3abn/vars/playedsec.txt)
+		psdiff=$((plsec-oplsec))
+		if [ "$psdiff" = "0" ]; then
+			echo "0" >/tmp/play3abn/vars/playsec.txt # Paused at present
+		else
+			echo "$playsec" >/tmp/play3abn/vars/playsec.txt
+		fi
 		sleep 1
+		oplsec=$plsec
 		now=$(date +%s)
 	done		
 }
@@ -121,7 +133,7 @@ findFill() { # OUTPUT: len,tgt
 	len=${fill:0:4}
 	len=$(echo "$len" | bc)
 	fill=${fill:5}
-	tgt=$(find /tmp/play3abn/cache/*/ | grep "$fill" | head -n 1)
+	tgt=$(find /tmp/play3abn/cache/*/ -type f | grep "$fill" | head -n 1)
 }
 
 decodeLoop() {

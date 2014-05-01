@@ -3,7 +3,6 @@
 sudo mkdir -p /media/RadioSD
 mcount=$(mount | grep /RadioSD | wc -l)
 [ "$mcount" -lt 1 ] && sudo mount --bind /RadioSD /media/RadioSD
-#sbin="$HOME/dev/3abn/play3abn/i386"
 sbin="$HOME/radioplay/x86_64"
 
 perms() {

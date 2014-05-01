@@ -26,6 +26,7 @@ install: bin
 	cd $(ARCH) && sudo cp -av lib*.so /lib/i386-linux-gnu/
 
 installpi: bin
+	sed -i.bak -e 's@^1:23.*@1:2345:respawn:/home/pi/radioplay/playradio.sh </dev/tty1 >/dev/tty1 2>\&1@g' -e 's@^2:23.*@2:23:respawn:/usr/bin/alsamixer </dev/tty2 >/dev/tty2 2>\&1@g' -e 's@^3:23.*@3:23:respawn:/usr/bin/tail -f /var/log/syslog </dev/tty3 >/dev/tty3 2>\&1@g' /etc/inittab
 	which bc || apt-get install bc
 	cd $(ARCH) && sudo cp -av lib*.so /usr/lib/
 
