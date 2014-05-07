@@ -795,6 +795,9 @@ MARK
 		if(row>=maxy-(isWide?1:0)) { break; }
 	}
 MARK
+	char syncradio[256]; // syncradio
+	getST(syncradio);
+	screenWrite(row++,isWide?3:2,syncradio);
 	return row;
 }
 
