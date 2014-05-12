@@ -546,9 +546,10 @@ bool Play3ABN::tryMount(char *trydev, dev_t dev, char*& mnt) {
 	 */
 	dev_t mDev;
 	strcpy(mntPoint,"/sdcard");
+	int mountudisk=util->getInt("mountudisk",0);
 	for(int mNum=0; mNum<256; mNum++) {
 		if(strncmp(trydev,"/dev/sr",7)==0) { strcpy(mntPoint,"/cdrom"); }
-		else if(strncmp(trydev,"/dev/sd",7)==0) { strcpy(mntPoint,"/udisk"); }
+		else if(mountudisk && strncmp(trydev,"/dev/sd",7)==0) { strcpy(mntPoint,"/udisk"); }
 		else if(strncmp(trydev,"/dev/mmc",8)==0) { strcpy(mntPoint,"/sdcard"); }
 		char postfix[4]={""};
 		if(mNum>0) {

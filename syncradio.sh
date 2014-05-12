@@ -8,7 +8,9 @@ makepart() {
 	start=$3
 	end=$4
 	fs=$5
-	num=$6
+	num=$6	
+	src=$7
+	
 	echo "Making partition $num"
 	umount tgt/$num 2>&1 | egrep -vi "not found|not mounted"
 	parted -s $device "rm $num" 2>&1 | grep -v "Partition doesn't exist."
@@ -18,15 +20,15 @@ echo parted -s $device "mkpart $ptype $type $start $end"
 	if [ "$type" != "" ]; then
 					echo "Making filesystem $fs on $num"
 					if [ "$fs" = "ext4" ]; then
-									mkfs.$fs -m 0 ${device}p$num
+									mkfs.$fs -m 0 ${device}$num
 					else
-									mkfs.$fs ${device}p$num
+									mkfs.$fs ${device}$num
 					fi
-					mkdir -p tgt/$num
-					mount ${device}p$num tgt/$num
+					mkdir -p /mnt/tgt/$num
+					mount ${device}$num /mnt/tgt/$num
 					sleep 1
-					cp -av --no-preserve=ownership src/$num/* tgt/$num/
-					umount tgt/$num
+					cp -av --one-file-system --no-preserve=ownership "$src"/. /mnt/tgt/$num/
+					umount /mnt/tgt/$num
 	fi
 }
 
@@ -41,7 +43,18 @@ EOF
 
 mksd() {
 	local device=$1
-
+	umount /dev/sd* 2>&1 | egrep -vi "not found|not mounted"
+	dd if=/dev/zero of="$device" bs=512 count=1 2>/tmp/mksd.err
+	parted -s $device "mklabel msdos"
+	srcs=$(mount | egrep "^/dev/root|^/dev/mmcblk" | sort | awk '{print $3}' | grep -v ^/var/log)
+	src1=$(echo "$srcs" | head -n 1)
+	src2=$(echo "$srcs" | head -n 2 | tail -n 1)
+	src3=$(echo "$srcs" | tail -n 1)
+	makepart primary  fat32 0%      29000M  vfat 1 "$src1"
+	makepart extended ""    29000M  100%    ""   2
+	fixexpart
+	makepart logical  fat32 29001M  29050M  vfat 5 "$src2"
+	makepart logical  ext2  29051M  100%    ext4 6 "$src3"
 }
 
 download() {				
@@ -66,16 +79,6 @@ checkDownloads() {
 	done
 }
 
-upload() {
-	local srcdir=$1
-	local tgtdir=$1
-	local free=$(df -P "$srcdir" | grep "$srcdir" | awk '{print $4}')
-	local count=$(find "$srcdir" -type f | wc -l)
-	if [ "$free" -gt "28000000" -a "$count" = "0" ]; then #Enough space to create
-		mksd "$dev"
-	fi
-}
-
 # RETURN how many files are used on all inserted devices (should be zero to be safe)
 filecount() {
 	filecount=$(echo $(for dev in /dev/sd*; do
@@ -95,8 +98,8 @@ checkUploads() {
 		[ "$devfree" -lt "30000" ] && continue # Not enough space on this device
 		echo "$dev"
 	done | sed -e 's/[0-9]$//g' | sort | uniq | while read dev; do # May have more than one device plugged in that is blank
-		# UPLOAD from PI
-		echo upload "$tgtdir" "$srcdir" # Reverse
+		# UPLOAD from PI.  Will REPLACE all contents of $dev
+		#mksd "$dev"
 		sleep 5
 	done
 }
