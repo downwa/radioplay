@@ -109,10 +109,10 @@ checkUploads() {
 				agediff=$(echo $(stat -c "%Y" "$cmp/." "$d/.") | sed -e 's/ /-/g' | bc)
 				if [ "$agediff" -gt "0" ]; then
 					echo "SYNC TO USB"
-					rsync --dry-run -av --delete "$cmp/." "$d/."
+					rsync -av --delete "$cmp/." "$d/."
 				else
 					echo "SYNC FROM USB"
-					rsync --dry-run -av "$d/." "$cmp/."
+					rsync -av "$d/." "$cmp/."
 				fi
 			}
 			umount "$dev" 2>/dev/null
