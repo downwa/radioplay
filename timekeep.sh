@@ -13,6 +13,7 @@ main() {
 	while [ true ]; do
 		date=$(date +"%D %T")
 		echo "$date" >"$tk"
+		/sbin/fake-hwclock save # Save current time in case of power failure
 		sleep 1
 	done
 }

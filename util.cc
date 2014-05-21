@@ -201,14 +201,16 @@ void Util::setConn() { /** ping -c 1 $(cat vars/baseurl.txt | cut -d '/' -f 3) |
 }
 void Util::setIP() {
 	char interface[32];
-	rungrep("/sbin/route -n","0.0.0.0",8,sizeof(interface),interface);
+	//syslog(LOG_ERR,"BEFORE, interface=%s",interface);
+	rungrep("/sbin/route -n","^0.0.0.0",8,sizeof(interface),interface);
 	// /sbin/ifconfig "$if" | grep "inet addr:" | awk '{print $2}' | cut -d ':' -f 2
 	char cmd[32];
 	char outbuf[32];
 	char *pp;
-	if(!interface[0]) { noNet=true; goto otherTasks; }
+	if(!interface[0]) { snprintf(interface,sizeof(interface),"eth0:1"); } //noNet=true; goto otherTasks; }
 	snprintf(cmd,sizeof(cmd),"/sbin/ifconfig %s",interface);
 	rungrep(cmd,"inet addr:",2,sizeof(outbuf),outbuf);
+	//syslog(LOG_ERR,"outbuf=%s,interface=%s",outbuf,interface);
 	if(!outbuf[0]) { noNet=true; goto otherTasks; }
 	pp=strchr(outbuf,':');
 	if(!pp) { pp=(char *)""; }

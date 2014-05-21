@@ -25,7 +25,7 @@ echo parted -s $device "mkpart $ptype $type $start $end"
 									mkfs.$fs ${device}$num
 					fi
 					mkdir -p /mnt/tgt/$num
-					mount ${device}$num /mnt/tgt/$num
+					mount ${device}$num /mnt/tgt/$num 2>&1 || echo "Mount ${device}$num failed."
 					sleep 1
 					cp -av --one-file-system --no-preserve=ownership "$src"/. /mnt/tgt/$num/
 					umount /mnt/tgt/$num
@@ -60,13 +60,13 @@ mksd() {
 download() {				
 	local srcdir=$1
 	local tgtdir=$1
-	printf "\rUpdating $tgtdir from $srcdir...\r"
-	#rsync -auv "$srcdir/$SRC/download"/* "$tgtdir/download" | while read line; do printf "\r%s    \r" "$line"; done
-	# rsync --itemize-changes -v --verbose -rlptgoDuv "$srcdir/$SRC/download"/* "$tgtdir/download" | while read line; do printf "\r%s    \r" "$line"; echo "$line" >/tmp/play3abn/vars/syncradio.txt; done
-	rsync -rlptDuv --size-only "$srcdir/$SRC/download"/* "$tgtdir/download" | while read line; do printf "\r%s    \r" "$line"; echo "$line" >/tmp/play3abn/vars/syncradio.txt; done
+	printf "Updating $tgtdir from $srcdir...\n"
+	#rsync -auv "$srcdir/$SRC/download"/* "$tgtdir/download" | while read line; do printf "%s\n" "$line"; done
+	# rsync --itemize-changes -v --verbose -rlptgoDuv "$srcdir/$SRC/download"/* "$tgtdir/download" | while read line; do printf "%s\n" "$line"; echo "$line" >/tmp/play3abn/vars/syncradio.txt; done
+	rsync -rlptDuv --size-only "$srcdir/$SRC/download"/* "$tgtdir/download" | while read line; do printf "%s\n" "$line"; echo "$line" >/tmp/play3abn/vars/syncradio.txt; done
 	for dir in schedules filler Radio; do
 		if [ -d "$srcdir/$SRC/$dir" ]; then
-			rsync -rlptDuv --delete --size-only "$srcdir/$SRC/$dir"/* "$tgtdir/$dir" | while read line; do printf "\r%s    \r" "$line"; echo "$line" >/tmp/play3abn/vars/syncradio.txt; done
+			rsync -rlptDuv --delete --size-only "$srcdir/$SRC/$dir"/* "$tgtdir/$dir" | while read line; do printf "%s\n" "$line"; echo "$line" >/tmp/play3abn/vars/syncradio.txt; done
 		fi
 	done
 }
@@ -92,7 +92,33 @@ filecount() {
 
 checkUploads() {
 	filecount
-	[ "$filecount" -gt "0" ] && return # Don't want to trash any disks
+	if [ "$filecount" -gt "0" ]; then
+		srcs=$(mount | egrep "^/dev/root|^/dev/mmcblk" | sort | awk '{print $3}' | grep -v ^/var/log)
+		src1=$(echo "$srcs" | head -n 1)
+		src2=$(echo "$srcs" | head -n 2 | tail -n 1)
+		src3=$(echo "$srcs" | tail -n 1)
+		for dev in /dev/sda1 /dev/sda5 /dev/sda6; do
+			n=${dev:8}
+			umount "$dev" 2>/dev/null
+			d="/mnt/tgt/$n"; mkdir -p "$d"
+			echo "CHECKING $dev..."
+			mount "$dev" "$d" 2>/dev/null && {
+				[ "$dev" = "/dev/sda1" ] && cmp=$src1
+				[ "$dev" = "/dev/sda5" ] && cmp=$src2
+				[ "$dev" = "/dev/sda6" ] && cmp=$src3
+				agediff=$(echo $(stat -c "%Y" "$cmp/." "$d/.") | sed -e 's/ /-/g' | bc)
+				if [ "$agediff" -gt "0" ]; then
+					echo "SYNC TO USB"
+					rsync --dry-run -av --delete "$cmp/." "$d/."
+				else
+					echo "SYNC FROM USB"
+					rsync --dry-run -av "$d/." "$cmp/."
+				fi
+			}
+			umount "$dev" 2>/dev/null
+		done
+		return # Don't want to trash any disks
+	fi
 	for dev in /dev/sd*; do
 		devfree=$(parted "$dev" print | grep "^Disk.*$dev" | awk '{print $3}' | sed -e 's@GB@*1024/1@g' | bc)
 		[ "$devfree" -lt "30000" ] && continue # Not enough space on this device
@@ -113,7 +139,8 @@ doCleanup() {
 }
 
 notifyWaiting() {
-	printf "\r%s AWAITING DISK..." $(date +"%D %H:%M:%S")
+	date=$(date +"%D %H:%M:%S")
+	printf "%s AWAITING DISK...\n" "$date"
 	############ AWAIT INSERTION OF USB DISK #################
 	while [ true ]; do
 		grep -q sd[a-z][1-9]*$ /proc/partitions && break
@@ -131,7 +158,7 @@ notifyWaiting() {
 }
 
 notifyDone() {
-	printf "\r                                                                                                      \r"
+	#printf "\r                                                                                                      \r"
 	echo "SYNCHRONIZING COMPLETE.  REMOVE DISK."
 
 	########### NOTIFY COMPLETION ##############
@@ -156,10 +183,12 @@ maincycle() {
 	findTarget
 	if [ "$tgtdir" = "" ]; then
 		echo "NO TARGET FOUND."
+		sleep 1
 		return
 	fi		
 	notifyWaiting
-	printf "\r%s SYNCHRONIZING..." $(date +"%D %H:%M:%S")
+	date=$(date +"%D %H:%M:%S")
+	printf "%s SYNCHRONIZING...\n" "$date"
 	checkDownloads		
 	checkUploads
 	sleep 1
@@ -173,8 +202,8 @@ main() {
 	while [ true ]; do
 		maincycle | while read line; do
 			echo "$line" >/tmp/play3abn/vars/syncradio.txt
-			echo "$line"
-		done >/tmp/syncradio.out 2>/tmp/syncradio.err
+			echo "$line" 1>&2
+		done >/tmp/syncradio.out #2>/tmp/syncradio.err
 		mv -f /tmp/syncradio.out /tmp/syncradio.out.old
 		mv -f /tmp/syncradio.err /tmp/syncradio.err.old
 	done
