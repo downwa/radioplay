@@ -17,7 +17,7 @@ setterm -blank 0 -powerdown 0
 ./timekeep.sh &
 sleep 1
 ./syncradio.sh &
-#./failsafenet.sh & # NOTE: Using entry in /etc/network/interfaces instead
+./failsafenet.sh &
 
 date +"%D %H:%M:%S make installpi"
 make installpi

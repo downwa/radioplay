@@ -797,7 +797,14 @@ MARK
 MARK
 	char syncradio[256]; // syncradio
 	getST(syncradio);
-	screenWrite(row++,isWide?3:2,syncradio);
+	if(syncradio[0]) {
+// 		snprintf(out,sizeof(out),"%s",syncradio);
+// 		fixline(out,sizeof(out)); // Space padded, truncated to width
+// 		screenWrite(row++,isWide?3:2,out);
+		int xwid=(maxx<2 || maxx>sizeof(syncradio))?sizeof(syncradio):maxx;
+		syncradio[xwid-2]=0;
+		screenWrite(maxy-1,isWide?2:1,syncradio);
+	}
 	return row;
 }
 
