@@ -155,14 +155,13 @@ doCleanup() {
 }
 
 notifyWaiting() {
-	date=$(date +"%D %H:%M:%S")
-	printf "%s AWAITING DISK...\n" "$date"
+	printf "AWAITING DISK...\n"
 	############ AWAIT INSERTION OF USB DISK #################
 	while [ true ]; do
 		grep -q sd[a-z][1-9]*$ /proc/partitions && break
 		sleep 1
 	done
-	printf "%s DETECTED DISK.\n" "$date"
+	printf "DETECTED DISK.\n"
 	##### ACKNOWLEDGE INSERTION VIA LEDS #####
 	for note in 1 2 3 4 5; do
 					echo 1 >/sys/class/leds/led0/brightness; sleep 1
@@ -205,8 +204,7 @@ maincycle() {
 		return
 	fi		
 	notifyWaiting
-	date=$(date +"%D %H:%M:%S")
-	printf "%s SYNCHRONIZING...\n" "$date"
+	printf "SYNCHRONIZING...\n"
 	checkDownloads		
 	checkUploads
 	sleep 1
@@ -220,10 +218,11 @@ main() {
 	mkdir -p /tmp/play3abn/vars
 	while [ true ]; do
 		maincycle | while read line; do
-			free=$(echo $(df -h /mnt/tgt/* | egrep -v "^Filesystem|^/dev/root" | sort | uniq | sed -e 's@^/dev/@@g' -e 's/%/%%/g' | awk '{print $1"-"$5}'))
+			# date=$(date +"%D %H:%M:%S")
 			date=$(date +"%H:%M:%S")
-			echo "$date $free $line" | strings >/tmp/play3abn/vars/syncradio.txt
-			echo "$date $free $line" 1>&2
+			progress=$(cat /tmp/progress.txt 2>/dev/null)
+			echo "$date $progress $line" | strings >/tmp/play3abn/vars/syncradio.txt
+			echo "$date $progress $line" 1>&2
 		done >/tmp/syncradio.out 2>/tmp/syncradio.err
 		mv -f /tmp/syncradio.out /tmp/syncradio.out.old
 		mv -f /tmp/syncradio.err /tmp/syncradio.err.old

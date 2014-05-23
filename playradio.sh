@@ -18,6 +18,7 @@ setterm -blank 0 -powerdown 0
 sleep 1
 ./syncradio.sh &
 ./failsafenet.sh &
+./progress.sh &
 
 date +"%D %H:%M:%S make installpi"
 make installpi
