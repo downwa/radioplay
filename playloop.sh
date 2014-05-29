@@ -154,7 +154,7 @@ decodeLoop() {
 			cat=$(echo "$link" | sed -e 's/.*catcode=//g' -e 's/;.*//g')		# e.g. MELODY
 			len=$(echo "$link" | sed -e 's/.*expectSecs=//g' -e 's/;.*//g')		# e.g. 0721
 			flag=$(echo "$link" | sed -e 's/.*flag=//g' -e 's/;.*//g')		# e.g. 366
-			tgt=$(echo "$link" | sed -e 's/.*url=//g' -e 's/;.*//g')
+			tgt=$(echo "$link" | sed -e 's/.*url=//g' -e 's/;.*//g' -e 's/%20/ /g')
 			if [ "${#len}" -gt "4" ]; then
 				cat=$(echo "$link" | cut -d ' ' -f 1)
 				len=$(echo "$link" | cut -d ' ' -f 2 | bc)
