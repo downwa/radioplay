@@ -1,4 +1,5 @@
 #!/bin/sh
+# Purpose: Synchronize contents of (running) SD card with (attached) USB drive.
 
 SRC="UPDATE3ABN" # or RADIO3ABN, but that gets taken over for automatic playback
 
