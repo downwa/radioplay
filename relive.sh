@@ -1,8 +1,8 @@
 #!/bin/sh
 
 find /tmp/ping.log -cmin +2 -exec rm {} \;
-killall alive.sh
 if [ ! -f /tmp/ping.log ]; then
+	killall alive.sh
 	touch /tmp/ping.log
-	nohup ./alive.sh 2>/dev/null >/dev/null &
+	nohup /home/pi/radioplay/alive.sh 2>/tmp/alive.err >/dev/null &
 fi
