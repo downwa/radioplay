@@ -3,6 +3,20 @@
 
 SRC="UPDATE3ABN" # or RADIO3ABN, but that gets taken over for automatic playback
 
+fixmac() {
+        local cmdline=$1
+        # If clone has same MAC address as mine (or none) then change it.
+        clone=$(grep " smsc95xx.macaddr=" "$cmdline" | sed -e 's/.* smsc95xx.macaddr=//g')
+        mymac=$(ifconfig eth0 | grep HWaddr | awk '{print $5}')
+        [ "$clone" != "" -a "$clone" != "$mymac" ] && return
+
+        mac=$(dd if=/dev/urandom bs=3 count=1 2>/dev/null | hexdump -e '3/1 ":%02x"')
+        mac="b8:27:eb$mac"
+
+        echo "Setting MAC to $mac"
+        sed -i "$cmdline" -e "s/$/ smsc95xx.macaddr=$mac/g" -e "s/ smsc95xx.macaddr=.*/ smsc95xx.macaddr=$mac/g"
+}
+
 makepart() {
 	ptype=$1
 	type=$2
@@ -29,6 +43,7 @@ echo parted -s $device "mkpart $ptype $type $start $end"
 					mount ${device}$num /mnt/tgt/$num 2>&1 || echo "Mount ${device}$num failed."
 					sleep 1
 					cp -av --one-file-system --no-preserve=ownership "$src"/. /mnt/tgt/$num/
+					[ "$src" = "$src2" ] && fixmac "/mnt/tgt/$num/cmdline.txt"
 					umount /mnt/tgt/$num
 	fi
 }
@@ -119,6 +134,7 @@ checkUploads() {
 					echo "SYNC TO USB"
 					sleep 5
 					rsync --one-file-system -av --delete "$cmp/." "$d/."
+					[ "$cmp" = "$src2" ] && fixmac "$d/cmdline.txt"
 				else
 					if [ "$cmp" = "$src1" ]; then
 						echo "SYNC DOWN FROM USB"
