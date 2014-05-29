@@ -224,7 +224,8 @@ main() {
 			# date=$(date +"%D %H:%M:%S")
 			date=$(date +"%H:%M:%S")
 			progress=$(cat /tmp/progress.txt 2>/dev/null)
-			echo "$date $progress $line" | strings >/tmp/play3abn/vars/syncradio.txt
+			echo "$date $progress $line" | strings >/tmp/play3abn/vars/syncradio.txt.tmp
+			mv /tmp/play3abn/vars/syncradio.txt.tmp /tmp/play3abn/vars/syncradio.txt
 			echo "$date $progress $line" 1>&2
 		done >/tmp/syncradio.out 2>/tmp/syncradio.err
 		mv -f /tmp/syncradio.out /tmp/syncradio.out.old
