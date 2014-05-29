@@ -11,12 +11,13 @@ progress() {
 
 # 	free=$(echo $(df -h /mnt/tgt/* | egrep -v "^Filesystem|^/dev/root" | sort | uniq | sed -e 's@^/dev/@@g' -e 's/%/%%/g' | awk '{print $1"-"$5}'))
 
-	src=$(strings /proc/$pid/cmdline | tail -n 2 | head -n 1)
-	dst=$(strings /proc/$pid/cmdline | tail -n 2 | tail -n 1)
+	src=$(strings -n 1 /proc/$pid/cmdline | tail -n 2 | head -n 1)
+	dst=$(strings -n 1 /proc/$pid/cmdline | tail -n 2 | tail -n 1)
 	srcu=$(df "$src" | grep -v "^Filesystem" | awk '{print $3}')
 	dstu=$(df "$dst" | grep -v "^Filesystem" | awk '{print $3}')
-	pct=$((dstu*100/srcu))
 
+	[ "$srcu" = "0" -o "$srcu" = "" ] && return
+	pct=$((dstu*100/srcu))
 	kps=$(((dstu-odstu)/$dt))
 	[ "$kps" = "0" ] && return
 	kleft=$((srcu-dstu))
