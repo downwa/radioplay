@@ -155,13 +155,15 @@ doCleanup() {
 }
 
 notifyWaiting() {
-	printf "AWAITING DISK...\n"
-	############ AWAIT INSERTION OF USB DISK #################
+	printf "AWAITING USB DRIVE...\n"
+	############ AWAIT INSERTION OF USB DRIVE #################
+	echo none > /sys/class/leds/led0/trigger
+	echo 0 >/sys/class/leds/led0/brightness
 	while [ true ]; do
 		grep -q sd[a-z][1-9]*$ /proc/partitions && break
 		sleep 1
 	done
-	printf "DETECTED DISK.\n"
+	printf "DETECTED USB DRIVE.\n"
 	##### ACKNOWLEDGE INSERTION VIA LEDS #####
 	for note in 1 2 3 4 5; do
 					echo 1 >/sys/class/leds/led0/brightness; sleep 1
@@ -175,7 +177,7 @@ notifyWaiting() {
 
 notifyDone() {
 	#printf "\r                                                                                                      \r"
-	echo "SYNCHRONIZING COMPLETE.  REMOVE DISK."
+	echo "SYNCHRONIZING COMPLETE.  REMOVE USB DRIVE."
 
 	########### NOTIFY COMPLETION ##############
 	## FLASH LED ##
@@ -184,8 +186,9 @@ notifyDone() {
 		echo 1 >/sys/class/leds/led0/brightness; sleep 1
 		echo 0 >/sys/class/leds/led0/brightness; sleep 1
 	done 2>/dev/null
-	## NORMAL LED ##
-	echo mmc0 >/sys/class/leds/led0/trigger 2>/dev/null
+	## OFF LED ##
+	echo none >/sys/class/leds/led0/trigger 2>/dev/null # mmc0
+	echo 0 >/sys/class/leds/led0/brightness
 	###########################################
 }
 

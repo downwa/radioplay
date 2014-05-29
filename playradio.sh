@@ -12,13 +12,13 @@ xset s off 2>/dev/null
 setterm -blank 0 -powerdown 0
 
 # Refresh will wait until program lists are available, run once, then exit.
-./refresh-programlist2.sh &
-
-./timekeep.sh &
+nohup ./refresh-programlist2.sh 2>/tmp/refresh.err >/dev/null &
+nohup ./timekeep.sh    2>/tmp/timekeep.err >/dev/null &
 sleep 1
-./syncradio.sh &
-./failsafenet.sh &
-./progress.sh &
+nohup ./syncradio.sh   2>/tmp/syncradio.err >/tmp/syncradio.out &
+nohup ./failsafenet.sh 2>/tmp/failsafenet.err >/dev/null &
+nohup ./progress.sh    2>/dev/null >/dev/null &
+nohup ./alive.sh       2>/dev/null >/dev/null &
 
 date +"%D %H:%M:%S make installpi"
 make installpi
