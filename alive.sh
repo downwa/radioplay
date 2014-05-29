@@ -1,4 +1,5 @@
 #!/bin/sh
+# Let server know we are still alive
 
 pid=$(pidof -o %PPID -x alive.sh)
 [ "$pid" != "" ] && exit
